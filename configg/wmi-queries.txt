@@ -1,0 +1,14 @@
+This is a list of WMI queries that we can use to return more information for ConfigG
+
+"SELECT * FROM SqlService WHERE DisplayName LIKE '%@@SERVICENAME%' OR ServiceName = 'SQLBrowser'"
+"'SELECT * FROM ServerNetworkProtocol WHERE InstanceName LIKE '%@@SERVICENAME%'"
+"'SELECT * FROM ServerNetworkProtocolProperty WHERE IPAddressName = 'IPAll' AND InstanceName LIKE '%@@SERVICENAME%'"
+"'SELECT * FROM SqlServiceAdvancedProperty WHERE ServiceName LIKE '%@@SERVICENAME%'"
+"'SELECT * FROM ServerSettingsGeneralFlag WHERE InstanceName LIKE '%@@SERVICENAME%'"
+"'SELECT * FROM Win32_OperatingSystem"
+"'SELECT * FROM Win32_TimeZone"
+"'SELECT * FROM win32_processor"
+"'SELECT * FROM Win32_computerSystem"
+"'SELECT * FROM Win32_NetworkAdapterConfiguration WHERE IPEnabled = 'TRUE'"
+"'SELECT * FROM Win32_Volume WHERE SystemVolume <> 'TRUE' AND DriveType <> 4 AND DriveType <> 5"
+"'SELECT * FROM Win32_GroupUser WHERE GroupComponent="Win32_Group.Domain='@@HOSTNAME',Name='administrators'"

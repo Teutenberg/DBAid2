@@ -1,0 +1,268 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">10.0</VisualStudioVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SignAssembly>False</SignAssembly>
+    <AssemblyOriginatorKeyFile>DatacomSQLTeam.pfx</AssemblyOriginatorKeyFile>
+    <Trustworthy>False</Trustworthy>
+    <DatabaseAccess>MULTI_USER</DatabaseAccess>
+    <PermissionSet>SAFE</PermissionSet>
+    <TargetFrameworkProfile />
+    <GenerateCreateScript>False</GenerateCreateScript>
+    <Recovery>SIMPLE</Recovery>
+    <PageVerify>CHECKSUM</PageVerify>
+    <QuotedIdentifier>True</QuotedIdentifier>
+    <AnsiNulls>True</AnsiNulls>
+    <ServiceBrokerOption>DisableBroker</ServiceBrokerOption>
+    <GenerateSqlClrDdl>False</GenerateSqlClrDdl>
+    <TargetDatabase>client.dbaid.database</TargetDatabase>
+    <DacApplicationName>_dbaid</DacApplicationName>
+    <EnableFullTextSearch>False</EnableFullTextSearch>
+    <AllowSnapshotIsolation>False</AllowSnapshotIsolation>
+    <ReadCommittedSnapshot>False</ReadCommittedSnapshot>
+    <DacVersion>10.0</DacVersion>
+    <GenerateSqlClrSymbols>False</GenerateSqlClrSymbols>
+    <CloseCursorOnCommitEnabled>True</CloseCursorOnCommitEnabled>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>database</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{30bbb9ff-8cb9-44cb-b27e-d722fa8552e4}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql110DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>dbaid</RootNamespace>
+    <AssemblyName>dbaid</AssemblyName>
+    <ModelCollation>1033,CS</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <DefaultCollation>Latin1_General_CS_AS</DefaultCollation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>false</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <SqlTargetName>_dbaid</SqlTargetName>
+    <TreatTSqlWarningsAsErrors>False</TreatTSqlWarningsAsErrors>
+    <SqlCodeAnalysisRules>-Microsoft.Rules.Data.SR0001;-Microsoft.Rules.Data.SR0004;-Microsoft.Rules.Data.SR0005;-Microsoft.Rules.Data.SR0006;-Microsoft.Rules.Data.SR0007;-Microsoft.Rules.Data.SR0008;-Microsoft.Rules.Data.SR0009;-Microsoft.Rules.Data.SR0010;-Microsoft.Rules.Data.SR0011;-Microsoft.Rules.Data.SR0012;-Microsoft.Rules.Data.SR0013;-Microsoft.Rules.Data.SR0014;-Microsoft.Rules.Data.SR0015;-Microsoft.Rules.Data.SR0016</SqlCodeAnalysisRules>
+    <RunSqlCodeAnalysis>False</RunSqlCodeAnalysis>
+    <SuppressTSqlWarnings>
+    </SuppressTSqlWarnings>
+    <FileAlignment>1024</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>1024</FileAlignment>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <SqlTargetName>_dbaid</SqlTargetName>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <SqlCodeAnalysisRules>
+    </SqlCodeAnalysisRules>
+    <RunSqlCodeAnalysis>False</RunSqlCodeAnalysis>
+  </PropertyGroup>
+  <!-- VS10 without SP1 will not have VisualStudioVersion set, so do that here -->
+  <PropertyGroup />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="checkmk" />
+    <Folder Include="system" />
+    <Folder Include="collector" />
+    <Folder Include="audit" />
+    <Folder Include="system\security" />
+    <Folder Include="audit\procedures" />
+    <Folder Include="audit\tables" />
+    <Folder Include="who-is-active" />
+    <Folder Include="system\function" />
+    <Folder Include="system\procedure" />
+    <Folder Include="system\procedure\configuration" />
+    <Folder Include="collector\procedures" />
+    <Folder Include="collector\tables" />
+    <Folder Include="checkmk\tables" />
+    <Folder Include="checkmk\procedures" />
+    <Folder Include="ola-maintenance-solution" />
+    <Folder Include="health" />
+    <Folder Include="datamart" />
+    <Folder Include="datamart\tables" />
+    <Folder Include="datamart\procedures" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="system\configuration.sql" />
+    <PostDeploy Include="post_script.sql" />
+    <PreDeploy Include="pre_script.sql" />
+    <Build Include="system\security\schemas.sql" />
+    <Build Include="audit\procedures\get_database_last_access.sql" />
+    <Build Include="audit\tables\database_last_access.sql" />
+    <Build Include="who-is-active\who_is_active.sql">
+      <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+    </Build>
+    <None Include="test_procedures.sql" />
+    <Build Include="system\function\get_clean_string.sql" />
+    <Build Include="system\function\get_datetimeoffset.sql" />
+    <Build Include="system\function\get_instance_guid.sql" />
+    <Build Include="system\function\get_product_version.sql" />
+    <Build Include="system\function\get_split_string.sql" />
+    <Build Include="system\procedure\configuration\set_default_agentjob_configuration.sql" />
+    <Build Include="system\procedure\configuration\set_default_db_performance_configuration.sql" />
+    <Build Include="system\procedure\delete_system_history.sql" />
+    <Build Include="system\procedure\execute_foreach_db.sql" />
+    <Build Include="system\procedure\generate_secret.sql" />
+    <Build Include="system\procedure\get_instance_tag.sql" />
+    <Build Include="collector\procedures\get_agentjob_history.sql" />
+    <Build Include="collector\procedures\get_backup_history.sql" />
+    <Build Include="collector\procedures\get_errorlog_history.sql" />
+    <Build Include="collector\tables\last_execution.sql" />
+    <Build Include="checkmk\tables\config_database.sql" />
+    <Build Include="checkmk\tables\config_agentjob.sql" />
+    <Build Include="checkmk\procedures\chart_capacity_fg.sql" />
+    <Build Include="checkmk\procedures\check_agentjob.sql" />
+    <Build Include="checkmk\procedures\check_backup.sql" />
+    <Build Include="checkmk\procedures\check_database.sql" />
+    <Build Include="checkmk\procedures\check_integrity.sql" />
+    <Build Include="checkmk\procedures\check_logshipping.sql" />
+    <Build Include="checkmk\procedures\check_mirroring.sql" />
+    <Build Include="checkmk\procedures\inventory_agentjob.sql" />
+    <Build Include="checkmk\procedures\inventory_database.sql" />
+    <Build Include="ola-maintenance-solution\CommandExecute.sql">
+      <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+    </Build>
+    <Build Include="ola-maintenance-solution\CommandLog.sql" />
+    <Build Include="ola-maintenance-solution\DatabaseBackup.sql">
+      <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+    </Build>
+    <Build Include="ola-maintenance-solution\DatabaseIntegrityCheck.sql">
+      <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+    </Build>
+    <Build Include="ola-maintenance-solution\IndexOptimize.sql">
+      <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+    </Build>
+    <Build Include="ola-maintenance-solution\Queue.sql" />
+    <Build Include="ola-maintenance-solution\QueueDatabase.sql" />
+    <Build Include="health\get_transaction_log.sql" />
+    <Build Include="health\get_index_fragmentation.sql" />
+    <Build Include="health\get_statistic_state.sql" />
+    <Build Include="health\get_file_io_performance.sql" />
+    <Build Include="health\get_block_process_history.sql" />
+    <Build Include="health\get_dead_lock_history.sql" />
+    <Build Include="system\procedure\generate_login_script.sql" />
+    <Build Include="system\function\get_hexadecimal.sql" />
+    <Build Include="collector\procedures\get_instance_ci.sql" />
+    <Build Include="collector\procedures\get_database_ci.sql" />
+    <Build Include="collector\procedures\get_capacity_db.sql" />
+    <Build Include="datamart\tables\stage_agentjob_history.sql" />
+    <Build Include="datamart\tables\stage_backup_history.sql" />
+    <Build Include="datamart\tables\stage_errorlog_history.sql" />
+    <Build Include="datamart\tables\load_file_log.sql" />
+    <Build Include="datamart\procedures\process_stage_data.sql" />
+    <Build Include="datamart\tables\dim_database.sql" />
+    <Build Include="datamart\tables\dim_date.sql" />
+    <Build Include="datamart\tables\dim_instance.sql" />
+    <Build Include="datamart\tables\dim_time.sql" />
+    <Build Include="datamart\tables\fact_errorlog_history.sql" />
+    <Build Include="datamart\tables\stage_capacity_db.sql" />
+    <Build Include="datamart\tables\fact_agentjob_history.sql" />
+    <Build Include="datamart\tables\fact_backup_history.sql" />
+    <Build Include="datamart\tables\fact_capacity_db.sql" />
+    <Build Include="system\procedure\set_ag_agent_job_state.sql" />
+    <Build Include="checkmk\tables\config_alwayson.sql" />
+    <Build Include="checkmk\procedures\inventory_alwayson.sql" />
+    <Build Include="checkmk\procedures\check_alwayson.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include=".\master.dacpac">
+      <HintPath>.\master.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>True</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+    <ArtifactReference Include=".\msdb.dacpac">
+      <HintPath>.\msdb.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>True</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>msdb</DatabaseVariableLiteralValue>
+      <Private>True</Private>
+    </ArtifactReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="database.publish.xml" />
+    <None Include="get-latest-submodules.ps1" />
+    <None Include="datamart\load-collector-xml-into-datamart.ps1" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>false</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <SqlTargetName>_dbaid_release_00</SqlTargetName>
+    <TreatTSqlWarningsAsErrors>False</TreatTSqlWarningsAsErrors>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <SqlCodeAnalysisRules>-Microsoft.Rules.Data.SR0001;-Microsoft.Rules.Data.SR0004;-Microsoft.Rules.Data.SR0005;-Microsoft.Rules.Data.SR0007</SqlCodeAnalysisRules>
+    <RunSqlCodeAnalysis>False</RunSqlCodeAnalysis>
+    <SuppressTSqlWarnings />
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>8192</FileAlignment>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,14 @@
+﻿/*
+Copyright (C) 2015 Datacom
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+*/
+
+CREATE TABLE [datamart].[stage_errorlog_history]
+(
+	[instance_guid] UNIQUEIDENTIFIER NULL,
+	[log_date] DATETIMEOFFSET NULL,
+	[source] NVARCHAR(100) NULL,
+	[message_header] NVARCHAR(MAX) NULL,
+	[message] NVARCHAR(MAX) NULL
+)
