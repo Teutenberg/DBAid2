@@ -1,7 +1,4 @@
-##The Datacom Microsoft SQL Server monitoring and management solution.
+##Microsoft SQL Server adminitrative support database. 
+This database solution helps SQL DBA's manage, maintain, and monitor their database environments. 
 
-Compatible and tested with 2008 SP2+, 2008 R2, 2012, 2014.
-
- 
-
-This is an unstable development fork of DBAid, DO NOT USE!
+Compatible and tested with 2012, 2014, 2016, 2017.
