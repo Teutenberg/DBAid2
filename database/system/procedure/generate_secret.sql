@@ -1,7 +1,14 @@
 ﻿/*
-Copyright (C) 2015 Datacom
-GNU GENERAL PUBLIC LICENSE
-Version 3, 29 June 2007
+Generates random secret with user defined length. 
+
+PARAMETERS
+	INPUT
+		@length INT
+		Length of the secret to generate. Default 20 characters. 
+		
+	OUTPUT
+		@secret VARCHAR(100)
+		Output parameter that contains the generated secret.  
 */
 
 CREATE PROCEDURE [system].[generate_secret] (

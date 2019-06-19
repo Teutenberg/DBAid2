@@ -1,7 +1,16 @@
 ﻿/*
-Copyright (C) 2015 Datacom
-GNU GENERAL PUBLIC LICENSE
-Version 3, 29 June 2007
+Scripts logins create script.
+
+PARAMETERS
+	INPUT
+		@login_name SYSNAME
+		Name of the login to generate. NULL generates all logins. Default NULL. 
+		
+		@exclude_local BIT
+		Exclude local Windows accounts. Default 1.
+
+		@exclude_system BIT
+		Exclude system accounts like ## and NT. Default 1.
 */
 
 CREATE PROCEDURE [system].[generate_login_script] 
