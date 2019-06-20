@@ -9,7 +9,7 @@ steps:
   displayName: 'PowerShell Script'
   inputs:
     targetType: filePath
-    filePath: '/database/get-latest-submodules.ps1'
+    filePath: '$(System.DefaultWorkingDirectory)/database/get-latest-submodules.ps1'
 
 - task: VSBuild@1
   inputs:
