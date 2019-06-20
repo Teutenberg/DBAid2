@@ -1,5 +1,7 @@
 trigger:
-- master
+  branches:
+   include:
+     - refs/tags/release
 
 pool:
   vmImage: 'vs2017-win2016'
@@ -15,4 +17,5 @@ steps:
   inputs:
     solution: '**\*.sln' 
     vsVersion: 'latest'
-    configuration: Release
+    configuration: 'Release'
+    msbuildArchitecture: 'x64'
