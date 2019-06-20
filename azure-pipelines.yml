@@ -1,5 +1,8 @@
 trigger:
-- master
+  branches:
+    include:
+      - master
+      - refs/tags/{release}
 
 pool:
   vmImage: 'vs2017-win2016'
