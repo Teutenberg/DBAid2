@@ -11,9 +11,10 @@ steps:
     targetType: filePath
     filePath: '$(System.DefaultWorkingDirectory)/database/get-latest-submodules.ps1'
 
-- task: VSBuild@1
+- task: MSBuild@1
   inputs:
     solution: '**\*.sln' 
-    vsVersion: 'latest'
+    msbuildVersion: 'latest'
     configuration: 'Release'
     msbuildArchitecture: 'x64'
+
