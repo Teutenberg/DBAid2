@@ -17,4 +17,5 @@ steps:
   inputs:
     solution: '**\*.sln' 
     vsVersion: 'latest'
-    configuration: Release
+    configuration: 'Release'
+    msbuildArchitecture: 'x64'
