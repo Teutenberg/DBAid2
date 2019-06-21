@@ -22,11 +22,11 @@ steps:
   displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
   inputs:
     Contents: |
-      DBAid2\checkmk\bin\**\*
-      DBAid2\database\bin\**\*.dacpac
-      DBAid2\collector\*
-      DBAid2\configg\*
-      DBAid2\cis-benchmark\*
+      $(Build.SourcesDirectory)\checkmk\bin\**\*
+      $(Build.SourcesDirectory)\database\bin\**\*.dacpac
+      $(Build.SourcesDirectory)\collector\*
+      $(Build.SourcesDirectory)\configg\*
+      $(Build.SourcesDirectory)\cis-benchmark\*
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
