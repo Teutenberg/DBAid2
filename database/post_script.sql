@@ -82,12 +82,8 @@ BEGIN
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_delete_system_history')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_delete_system_history')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_delete_system_history_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_delete_system_history', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_delete_system_history', @owner_login_name=@owner,
 				@enabled=0, @category_name=N'_dbaid_maintenance', @description=N'Executes [system].[delete_system_history] to cleanup job, backup, cmdlog history in [_dbaid] and msdb database.', 
@@ -124,15 +120,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id = @jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_full')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_full')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_backup_user_full_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_backup_user_full', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_backup_user_full', @owner_login_name=@owner,
 				@enabled=0, 
@@ -162,15 +155,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_tran')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_tran')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_backup_user_tran_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_backup_user_tran', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_backup_user_tran', @owner_login_name=@owner,
 				@enabled=0, 
@@ -200,15 +190,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_system_full')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_system_full')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_backup_system_full_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_backup_system_full', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_backup_system_full', @owner_login_name=@owner,
 				@enabled=0, 
@@ -238,15 +225,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_index_optimise_user')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_index_optimise_user')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_index_optimise_user_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_index_optimise_user', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_index_optimise_user', @owner_login_name=@owner,
 				@enabled=0, 
@@ -276,15 +260,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_index_optimise_system')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_index_optimise_system')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_index_optimise_system_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_index_optimise_system', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_index_optimise_system', @owner_login_name=@owner,
 				@enabled=0, 
@@ -314,15 +295,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_integrity_check_user')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_integrity_check_user')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_integrity_check_user_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_integrity_check_user', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_integrity_check_user', @owner_login_name=@owner,
 				@enabled=0, 
@@ -352,15 +330,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_integrity_check_system')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_integrity_check_system')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_integrity_check_system_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_integrity_check_system', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_integrity_check_system', @owner_login_name=@owner,
 				@enabled=0,
@@ -390,15 +365,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
 
 	SET @jobId = NULL;
 
-	IF EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_set_ag_agent_job_state')
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_set_ag_agent_job_state')
 	BEGIN
-		SET @cmd = N'__DELETE_dbaid_set_ag_agent_job_state_' + @timestamp
-		EXEC msdb.dbo.sp_update_job @job_name=N'_dbaid_set_ag_agent_job_state', @new_name=@cmd, @enabled = 0;
-	END
-
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_set_ag_agent_job_state', @owner_login_name=@owner,
 				@enabled=0,
@@ -427,10 +399,12 @@ BEGIN
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
+	END
+
+	/* Create SQL Agent alert */
+	IF NOT EXISTS (SELECT 1 FROM msdb.dbo.sysalerts WHERE [name] = N'_dbaid_set_ag_agent_job_state')
+	EXEC msdb.dbo.sp_add_alert @name = N'_dbaid_set_ag_agent_job_state', @message_id = 1480, @severity = 0, @enabled = 0, @delay_between_responses = 0, @include_event_description_in = 1, @job_name = N'_dbaid_set_ag_agent_job_state';
 END
 GO
 
-/* Create SQL Agent alert */
-IF NOT EXISTS (SELECT 1 FROM msdb.dbo.sysalerts WHERE [name] = N'_dbaid_set_AG_agent_job_state')
-  EXEC msdb.dbo.sp_add_alert @name = N'_dbaid_set_AG_agent_job_state', @message_id = 1480, @severity = 0, @enabled = 0, @delay_between_responses = 0, @include_event_description_in = 1, @job_name = N'_dbaid_set_AG_agent_job_state';
-GO
+
