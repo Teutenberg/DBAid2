@@ -25,7 +25,7 @@ steps:
       $(Build.SourcesDirectory)\checkmk\bin\**\*
       $(Build.SourcesDirectory)\database\bin\**\*.dacpac
       $(Build.SourcesDirectory)\collector\*
-      $(Build.SourcesDirectory)\configg\*
+      $(Build.SourcesDirectory)\configg\**
       $(Build.SourcesDirectory)\cis-benchmark\*
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
