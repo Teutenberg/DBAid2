@@ -1,6 +1,4 @@
 trigger:
-  branches:
-   include:
      - master
 
 pool:
@@ -13,9 +11,25 @@ steps:
     targetType: filePath
     filePath: '$(System.DefaultWorkingDirectory)/database/get-latest-submodules.ps1'
 
-- task: VSBuild@1
+- task: MSBuild@1
   inputs:
     solution: '**\*.sln' 
-    vsVersion: 'latest'
+    msbuildVersion: 'latest'
     configuration: 'Release'
     msbuildArchitecture: 'x64'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+  inputs:
+    Contents: |
+      $(Build.SourcesDirectory)\checkmk\bin\**\*
+      $(Build.SourcesDirectory)\database\bin\**\*.dacpac
+      $(Build.SourcesDirectory)\collector\*
+      $(Build.SourcesDirectory)\configg\**
+      $(Build.SourcesDirectory)\cis-benchmark\*
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
