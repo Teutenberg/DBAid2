@@ -118,6 +118,7 @@
     <Folder Include="datamart" />
     <Folder Include="datamart\tables" />
     <Folder Include="datamart\procedures" />
+    <Folder Include="view" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="system\configuration.sql" />
@@ -200,6 +201,7 @@
     <Build Include="checkmk\tables\config_alwayson.sql" />
     <Build Include="checkmk\procedures\inventory_alwayson.sql" />
     <Build Include="checkmk\procedures\check_alwayson.sql" />
+    <Build Include="view\active_backup_restore.sql" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />

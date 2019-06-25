@@ -3,13 +3,13 @@
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with the SQLCLR assembly.
-[assembly: AssemblyTitle("Datacom DBAid")]
+[assembly: AssemblyTitle("")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Datacom")]
-[assembly: AssemblyProduct("DBAid")]
-[assembly: AssemblyCopyright("Datacom")]
-[assembly: AssemblyTrademark("Datacom")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("")]
+[assembly: AssemblyCopyright("")]
+[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Version information for an assembly consists of the following four values:
@@ -19,4 +19,4 @@
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("2.0.*")]
+[assembly: AssemblyVersion("0.0")]
