@@ -221,7 +221,7 @@ BEGIN
 		END
 		ELSE
 			EXEC msdb.dbo.sp_add_jobschedule @job_id=@jobId, @name=N'_dbaid_backup_user_tran',
-				@enabled=1, @freq_type=4, @freq_interval=1, @freq_subday_type=4, @freq_subday_interval=30, @active_start_time=0;
+				@enabled=1, @freq_type=4, @freq_interval=1, @freq_subday_type=4, @freq_subday_interval=15, @active_start_time=0;
 
 		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
 	COMMIT TRANSACTION
