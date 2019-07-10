@@ -1,7 +1,6 @@
 ﻿/*
-
-
-
+Returns LIMITED index fragmention stats
+and historical index operation information from the Ola [dbo].[CommandLog]
 */
 
 CREATE PROCEDURE [health].[get_index_fragmentation]
@@ -12,12 +11,23 @@ BEGIN
 		[dbid] INT,
 		[object_id] INT,
 		[index_id] INT,
+		[partition_number] INT,
 		[name] sysname NULL,
 		[type] sysname
 	);
 
 	INSERT INTO @indexes
-	EXEC [system].[execute_foreach_db] N'USE [?]; SELECT DB_ID(),[object_id],[index_id],[name],[type_desc] FROM sys.indexes';
+	EXEC [system].[execute_foreach_db] N'USE [?]; 
+		SELECT [dbid]=DB_ID()
+			,[i].[object_id]
+			,[i].[index_id]
+			,[p].[partition_number]
+			,[i].[name]
+			,[i].[type_desc] 
+		FROM sys.indexes [i]
+			INNER JOIN sys.partitions [p] 
+				ON [i].[object_id] = [p].[object_id] 
+					AND [i].[index_id] = [p].[index_id]';
 
 	;WITH LogData
 	AS
@@ -35,11 +45,11 @@ BEGIN
 			AND [cl].[ErrorNumber] = 0
 			AND [cl].[StartTime] > DATEADD(MONTH, -1, GETDATE())
 	)
-	SELECT [db_name] = DB_NAME([ld].[dbid])
-		,[object_name] = OBJECT_NAME([ld].[object_id], [ld].[dbid])
-		,[ld].[index_name]
-		,[ld].[index_type]
-		,[ld].[partition_number]
+	SELECT [db_name] = DB_NAME([i].[dbid])
+		,[object_name] = OBJECT_NAME([i].[object_id], [i].[dbid])
+		,[i].[name]
+		,[i].[type]
+		,[i].[partition_number]
 		,[current_avg_fragmentation] = AVG([ps].[avg_fragmentation_in_percent])
 		,[current_page_count] = MAX([ps].[page_count])
 		,[historic_avg_fragmentation] = AVG([ld].[fragmentation])
@@ -47,15 +57,16 @@ BEGIN
 		,[historic_stdevp_fragmentation] = STDEVP([ld].[fragmentation])
 		,[reorg_count_past_month] = SUM(CASE [ld].[operation] WHEN N'REORGANIZE' THEN 1 ELSE 0 END)
 		,[rebuild_count_past_month] = SUM(CASE [ld].[operation] WHEN N'REBUILD' THEN 1 ELSE 0 END)
-	FROM LogData [ld]
-		INNER JOIN @indexes [i]
-			ON [ld].[dbid] = [i].[dbid]
-				AND [ld].[object_id] = [i].[object_id]
-				AND [ld].[index_name] = [i].[name]
-		CROSS APPLY sys.dm_db_index_physical_stats([ld].[dbid], [ld].[object_id], [i].[index_id], [ld].[partition_number], 'LIMITED') [ps]	
-	GROUP BY [ld].[dbid]
-		,[ld].[object_id]
-		,[ld].[index_name]
-		,[ld].[index_type]
-		,[ld].[partition_number];
+	FROM @indexes [i]
+		CROSS APPLY sys.dm_db_index_physical_stats([i].[dbid], [i].[object_id], [i].[index_id], [i].[partition_number], 'LIMITED') [ps]
+		LEFT JOIN LogData [ld]
+			ON [i].[dbid] = [ld].[dbid]
+				AND [i].[object_id] = [ld].[object_id]
+				AND [i].[name] = [ld].[index_name]
+				AND [i].[partition_number] = [ld].[partition_number]	
+	GROUP BY [i].[dbid]
+		,[i].[object_id]
+		,[i].[name]
+		,[i].[type]
+		,[i].[partition_number];
 END
