@@ -150,17 +150,29 @@ function Connect-SqlServer
 
 <#
     .SYNOPSIS
-        Script logins from a collection of SQL Servers and executes on all SQL Servers to ensure logins match. 
+        Compares logins between SQL Servers and adds missing logins and server roles and server object permissions.
 
     .PARAMETER SqlServers
-        String array containing the list of SQL Servers to merge logins.
+        String array containing the list of SQL Servers to merge logins and permissions.
 
     .PARAMETER Credential
         PSCredential object with the credentials to use to impersonate a user when connecting.
         If this is not provided then the current user will be used to connect to the SQL Server Database Engine instance.
 
+    .PARAMETER LoginType
+        Specifies which type of logon credential should be used. The valid types
+        are Integrated, WindowsUser, or SqlLogin. If WindowsUser or SqlLogin are
+        specified then the parameter SetupCredential needs to be specified as well.
+        If set to 'Integrated' then the credentials that the resource current are
+        run with will be used.
+        If set to 'WindowsUser' then the it will impersonate using the Windows
+        login specified in the parameter SetupCredential.
+        If set to 'WindowsUser' then the it will impersonate using the native SQL
+        login specified in the parameter SetupCredential.
+        Default value is 'Integrated'.
+
     .PARAMETER ExcludeLogins
-        COllection of logins that should not be merged. 
+        Collection of logins that should not be merged. 
 
 #>
 function Merge-SqlLogins
@@ -171,7 +183,7 @@ function Merge-SqlLogins
         [Parameter()]
         [ValidateNotNull()]
         [System.String]
-        $ServerName = $env:COMPUTERNAME,
+        $SqlServers,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -188,24 +200,44 @@ function Merge-SqlLogins
         $ExcludeLogins
     )
 
-    [string[]]$LoginScripts = @()
-
     foreach ($SqlInstance in $SqlServers) {
-        $Server = Connect-SqlServer -ServerName $SqlInstance -Credential $Credential -LoginType $LoginType
-
-        $Options = New-Object 'Microsoft.SqlServer.Management.Smo.ScriptingOptions'
-	    $Options.LoginSid = $true
-	    $Options.Permissions = $true
-        $Options.IncludeIfNotExists = $true
+        $LocalServerName = $SqlInstance.Split('\')[0]
+        $LocalInstanceName = $SqlInstance.Split('\')[1]
+        $RemoteServers = $SqlServers.Where({$_ -ne $SqlInstance})
         
-        Write-Output "Scripting Logins from [$SqlInstance]..."
-	    $LoginScripts += $Server.Logins.Where({ $_.LoginType -eq 'WindowsUser' -and $_.Name -notlike "NT *" -and $_.Name -notin $ExcludeLogins }).Script($Options)
-    }
+        $LocalServer = Connect-SqlServer -ServerName $LocalServerName -InstanceName $LocalInstanceName -Credential $Credential -LoginType $LoginType 
+        $LocalLogins = $LocalServer.Logins.Where({ $_.Sid -ne 1 -and $_.Name -notlike "##*" -and $_.Name -notin $ExcludeLogins })
 
-    foreach ($SqlInstance in $SqlServers) {
-        $Server = Connect-SqlServer -ServerName $SqlInstance -Credential $Credential -LoginType $LoginType
-
-        Write-Output "Syncing Logins to [$SqlInstance]..."
-        $Server.Databases['master'].ExecuteNonQuery($LoginScripts)
+        foreach ($RemoteInstance in $RemoteServers) {
+            $RemoteServerName = $RemoteInstance.Split('\')[0]
+            $RemoteInstanceName = $RemoteInstance.Split('\')[1]
+            $RemoteServer = Connect-SqlServer -ServerName $RemoteServerName -InstanceName $RemoteInstanceName -Credential $Credential -LoginType $LoginType
+        
+            foreach ($LocalLogin in $LocalLogins) {
+                $LocalLogin.Refresh()
+                $RemoteLogin = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Login -ArgumentList $RemoteServer, $LocalLogin.Name
+                $RemoteLogin.Refresh()
+    
+                if (-not $RemoteLogin.CreateDate) {
+                    $RemoteLogin.LoginType = $LocalLogin.LoginType
+    
+                    if ($LocalLogin.LoginType -eq "WindowsUser") {
+                        $RemoteLogin.Create("")
+                    }
+                    elseif ($LocalLogin.LoginType -eq "SqlLogin") {
+                        $SqlLoginHash = $LocalServer.Databases['master'].ExecuteWithResults("SELECT [Hash]=CONVERT(NVARCHAR(512), LOGINPROPERTY(N'$($LocalLogin.Name)','PASSWORDHASH'), 1)").Tables.Hash
+                        $RemoteLogin.Create($SqlLoginHash, [Microsoft.SqlServer.Management.Smo.LoginCreateOptions]::IsHashed)
+                    }
+                }
+        
+                foreach ($ServerPermission in $LocalServer.enumServerPermissions($LocalLogin.Name).PermissionType) {
+                    $RemoteServer.Grant($ServerPermission, $RemoteLogin.Name)
+                }
+    
+                foreach ($ServerRole in $LocalLogin.ListMembers()) {
+                    $RemoteLogin.AddToRole($ServerRole)
+                }
+            }
+        }
     }
 }
