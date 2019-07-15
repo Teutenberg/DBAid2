@@ -2,7 +2,6 @@
     PsDBAid2.psm1 is a helper module for scripted activities. This module will contain functions to help simplify scripting and increase productivity. 
 #>
 Import-Module SqlServer
-[Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo') | Out-Null
 
 <#
     .SYNOPSIS
@@ -150,7 +149,7 @@ function Connect-SqlServer
 
 <#
     .SYNOPSIS
-        Compares logins between SQL Servers and adds missing logins and server roles and server object permissions.
+        Compares logins between SQL Servers and adds missing logins and server roles and server object permissions. This is a useful function to keep Availability Group cluster logins synced.
 
     .PARAMETER SqlServers
         String array containing the list of SQL Servers to merge logins and permissions.
