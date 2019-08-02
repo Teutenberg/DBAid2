@@ -82,7 +82,7 @@ SELECT @JobTokenServer = N'$' + N'(ESCAPE_DQUOTE(SRVR))'
 	,@owner = (SELECT [name] FROM sys.server_principals WHERE [sid] = 0x01)
 	,@timestamp = CONVERT(VARCHAR(8), GETDATE(), 112) + CAST(DATEPART(HOUR, GETDATE()) AS VARCHAR(2)) + CAST(DATEPART(MINUTE, GETDATE()) AS VARCHAR(2)) + CAST(DATEPART(SECOND, GETDATE()) AS VARCHAR(2));
 
-/* Linux filsystems use forward slash for navigating folders, not backslash. */
+/* Linux filesystems use forward slash for navigating folders, not backslash. */
 IF @DetectedOS = N'$(WindowsOS)'
   	SELECT @JobTokenLogDir = LEFT(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260)),LEN(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))) - CHARINDEX('\',REVERSE(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))))) + N'\';
 ELSE
@@ -159,15 +159,14 @@ BEGIN
 			@job_id = @jobId OUTPUT;
 
 
-		/* No CmdExec subsystem for Linux. */
+		/* No support for @CleanupTime parameter on Linux. */
 		IF @DetectedOS = N'$(LinuxOS)'
 		BEGIN
 			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''DIFF'', @CheckSum=''Y''';
 		END
 		ELSE
 		BEGIN
-			SET @cmd = N'sqlcmd -E -S "' + @JobTokenServer 
-				+ N'" -d "_dbaid" -Q "EXEC [dbo].[DatabaseBackup] @Databases=''USER_DATABASES'',@BackupType=''DIFF'',@CheckSum=''Y'',@CleanupTime=72" -b';
+			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''DIFF'', @CheckSum=''Y'', @CleanupTime=72';
 		END
 			
 		SET @out = @JobTokenLogDir + N'_dbaid_backup_user_diff_' + @JobTokenDateTime + N'.log';
@@ -175,15 +174,10 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_diff', 
 				@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 				@command=@cmd, 
+				@subsystem = N'$(SubSysTSQL)',
 				@output_file_name=@out,
 				@flags=2;
 
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysTSQL)';
-		ELSE
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysCmdExec)';
-		
 		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_backup_user_diff')
 		BEGIN
 			SET @schid = NULL;
@@ -209,15 +203,14 @@ BEGIN
 			@job_id = @jobId OUTPUT;
 
 
-		/* No CmdExec subsystem for Linux. */
+		/* No support for @CleanupTime parameter on Linux. */
 		IF @DetectedOS = N'$(LinuxOS)'
 		BEGIN
 			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y''';
 		END
 		ELSE
 		BEGIN
-			SET @cmd = N'sqlcmd -E -S "' + @JobTokenServer 
-						+ N'" -d "_dbaid" -Q "EXEC [dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y'', @CleanupTime=72" -b';
+			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y'', @CleanupTime=72';
 		END
 
 		
@@ -226,15 +219,10 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_full', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd, 
+			@subsystem = N'$(SubSysTSQL)',
 			@output_file_name=@out,
 			@flags=2;
 
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysTSQL)';
-		ELSE
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysCmdExec)';
-			
 		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_backup_user_full')
 		BEGIN
 			SET @schid = NULL;
@@ -259,15 +247,14 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		/* No CmdExec subsystem for Linux. */
+		/* No support for @CleanupTime parameter on Linux. */
 		IF @DetectedOS = N'$(LinuxOS)'
 		BEGIN
 			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''LOG'', @CheckSum=''Y''';
 		END
 		ELSE
 		BEGIN
-			SET @cmd = N'sqlcmd -E -S "' + @JobTokenServer
-						+ N'" -d "_dbaid" -Q "EXEC [dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''LOG'', @CheckSum=''Y'', @CleanupTime=72" -b';
+			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''LOG'', @CheckSum=''Y'', @CleanupTime=72';
 		END
 		
 		SET @out = @JobTokenLogDir + N'_dbaid_backup_user_tran_' + @JobTokenDateTime + N'.log';
@@ -275,15 +262,10 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_tran', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd, 
+			@subsystem = N'$(SubSysTSQL)',
 			@output_file_name=@out,
 			@flags=2;
 
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysTSQL)';
-		ELSE
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysCmdExec)';
-		
 		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_backup_user_tran')
 		BEGIN
 			SET @schid = NULL;
@@ -308,15 +290,14 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		/* No CmdExec subsystem for Linux. */
+		/* No support for @CleanupTime parameter on Linux. */
 		IF @DetectedOS = N'$(LinuxOS)'
 		BEGIN
-			SET @cmd = N'EXECUTE [_dbaid].[dbo].[DatabaseBackup] @Databases=''SYSTEM_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y''';
+			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''SYSTEM_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y''';
 		END
 		ELSE
 		BEGIN
-			SET @cmd = N'sqlcmd -E -S "' + @JobTokenServer
-						+ N'" -d "_dbaid" -Q "EXECUTE [dbo].[DatabaseBackup] @Databases=''SYSTEM_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y'', @CleanupTime=72" -b';
+			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''SYSTEM_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y'', @CleanupTime=72';
 		END
 
 		SET @out = @JobTokenLogDir + N'_dbaid_backup_system_full_' + @JobTokenDateTime + N'.log';
@@ -324,14 +305,9 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_system_full', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2,
 			@command=@cmd, 
+			@subsystem = N'$(SubSysTSQL)',
 			@output_file_name=@out,
 			@flags=2;
-
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysTSQL)';
-		ELSE
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysCmdExec)';
 
 		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_backup_system_full')
 		BEGIN
@@ -357,30 +333,16 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[IndexOptimize] @Databases=''USER_DATABASES'', @UpdateStatistics=''ALL'', @OnlyModifiedStatistics=''Y'', @StatisticsResample=''Y'', @MSShippedObjects=''Y'', @LockTimeout=600, @LogToTable=''Y''';
-		END
-		ELSE
-		BEGIN
-			SET @cmd = N'sqlcmd -E -S "' + @JobTokenServer 
-					+ N'" -d "_dbaid" -Q "EXEC [dbo].[IndexOptimize] @Databases=''USER_DATABASES'', @UpdateStatistics=''ALL'', @OnlyModifiedStatistics=''Y'', @StatisticsResample=''Y'', @MSShippedObjects=''Y'', @LockTimeout=600, @LogToTable=''Y''" -b';
-		END
+		SET @cmd = N'EXEC [_dbaid].[dbo].[IndexOptimize] @Databases=''USER_DATABASES'', @UpdateStatistics=''ALL'', @OnlyModifiedStatistics=''Y'', @StatisticsResample=''Y'', @MSShippedObjects=''Y'', @LockTimeout=600, @LogToTable=''Y''';
 
 		SET @out = @JobTokenLogDir + N'_dbaid_index_optimise_user_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_index_optimise_user', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2,
 			@command=@cmd, 
+			@subsystem = N'$(SubSysTSQL)',
 			@output_file_name=@out,
 			@flags=2;
-
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysTSQL)';
-		ELSE
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysCmdExec)';
 
 		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_index_optimise_user')
 		BEGIN
@@ -406,30 +368,16 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[IndexOptimize] @Databases=''SYSTEM_DATABASES'', @UpdateStatistics=''ALL'', @OnlyModifiedStatistics=''Y'', @StatisticsResample=''Y'', @MSShippedObjects=''Y'', @LockTimeout=600, @LogToTable=''Y''';
-		END
-		ELSE
-		BEGIN
-			SET @cmd = N'sqlcmd -E -S "' + @JobTokenServer
-						+ N'" -d "_dbaid" -Q "EXEC [dbo].[IndexOptimize] @Databases=''SYSTEM_DATABASES'', @UpdateStatistics=''ALL'', @OnlyModifiedStatistics=''Y'', @StatisticsResample=''Y'', @MSShippedObjects=''Y'', @LockTimeout=600, @LogToTable=''Y''" -b';
-		END
+		SET @cmd = N'EXEC [_dbaid].[dbo].[IndexOptimize] @Databases=''SYSTEM_DATABASES'', @UpdateStatistics=''ALL'', @OnlyModifiedStatistics=''Y'', @StatisticsResample=''Y'', @MSShippedObjects=''Y'', @LockTimeout=600, @LogToTable=''Y''';
 
 		SET @out = @JobTokenLogDir + N'_dbaid_index_optimise_system_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_index_optimise_system', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd, 
+			@subsystem = N'$(SubSysTSQL)',
 			@output_file_name=@out,
 			@flags=2;
-
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysTSQL)';
-		ELSE
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysCmdExec)';
 
 		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_index_optimise_system')
 		BEGIN
@@ -455,30 +403,16 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseIntegrityCheck] @Databases=''USER_DATABASES'', @CheckCommands=''CHECKDB'', @LockTimeout=600, @LogToTable=''Y'''
-		END
-		ELSE
-		BEGIN
-			SET @cmd = N'sqlcmd -E -S "' + @JobTokenServer 
-						+ N'" -d "_dbaid" -Q "EXEC [dbo].[DatabaseIntegrityCheck] @Databases=''USER_DATABASES'', @CheckCommands=''CHECKDB'', @LockTimeout=600, @LogToTable=''Y''" -b'
-		END
+		SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseIntegrityCheck] @Databases=''USER_DATABASES'', @CheckCommands=''CHECKDB'', @LockTimeout=600, @LogToTable=''Y''';
 
 		SET @out = @JobTokenLogDir + N'_dbaid_integrity_check_user_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_integrity_check_user', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd, 
+			@subsystem = N'$(SubSysTSQL)',
 			@output_file_name=@out,
 			@flags=2;
-
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysTSQL)';
-		ELSE
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysCmdExec)';
 
 		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_integrity_check_user')
 		BEGIN
@@ -504,30 +438,16 @@ BEGIN
 			@category_name=N'_dbaid_maintenance',
 			@job_id = @jobId OUTPUT;
 
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseIntegrityCheck] @Databases=''SYSTEM_DATABASES'', @CheckCommands=''CHECKDB'', @LockTimeout=600, @LogToTable=''Y'''
-		END
-		ELSE
-		BEGIN
-			SET @cmd = N'sqlcmd -E -S "' + @JobTokenServer 
-						+ N'" -d "_dbaid" -Q "EXEC [dbo].[DatabaseIntegrityCheck] @Databases=''SYSTEM_DATABASES'', @CheckCommands=''CHECKDB'', @LockTimeout=600, @LogToTable=''Y''" -b'
-		END
+		SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseIntegrityCheck] @Databases=''SYSTEM_DATABASES'', @CheckCommands=''CHECKDB'', @LockTimeout=600, @LogToTable=''Y''';
 
 		SET @out = @JobTokenLogDir + N'_dbaid_integrity_check_system_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_integrity_check_system',
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd,
+			@subsystem = N'$(SubSysTSQL)',
 			@output_file_name=@out,
 			@flags=2;
-
-		/* No CmdExec subsystem for Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysTSQL)';
-		ELSE
-			EXEC msdb.dbo.sp_update_jobstep @job_id=@jobId, @step_id = 1, @subsystem = N'$(SubSysCmdExec)';
 
 		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_integrity_check_system')
 		BEGIN
