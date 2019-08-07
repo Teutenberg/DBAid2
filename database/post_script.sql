@@ -15,10 +15,9 @@ Post-Deployment Script Template
                SELECT * FROM [$(TableName)]					
 --------------------------------------------------------------------------------------
 */
-:setvar LinuxOS "Linux"
-:setvar WindowsOS "Windows"
-:setvar SubSysTSQL "TSQL"
-:setvar SubSysCmdExec "CmdExec"
+:SETVAR LinuxOS "Linux"
+:SETVAR WindowsOS "Windows"
+:SETVAR SubSysTSQL "TSQL"
 
 USE [_dbaid];
 GO
@@ -45,6 +44,19 @@ EXEC [checkmk].[inventory_agentjob];
 GO
 EXEC [checkmk].[inventory_alwayson];
 GO
+
+/* Insert collector procedures with NULL last_execution datetime */
+MERGE INTO [collector].[last_execution] AS [Target]
+USING (
+	SELECT [object_name]=[name]
+		,[last_execution]=NULL 
+	FROM sys.objects 
+	WHERE [type] = 'P' 
+		AND SCHEMA_NAME([schema_id]) = N'collector'
+) AS [Source]([object_name],[last_execution])
+ON [Target].[object_name] = [Source].[object_name]
+WHEN NOT MATCHED BY TARGET THEN 
+	INSERT ([object_name],[last_execution]) VALUES ([Source].[object_name],[Source].[last_execution]);
 
 /* Create job categories */
 IF NOT EXISTS (SELECT 1 FROM msdb.dbo.syscategories WHERE [name] = N'_dbaid_ag_primary_only')
