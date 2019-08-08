@@ -1,23 +1,9 @@
 ﻿/*
-
-
-
-*/
-
-/*
 Post-Deployment Script Template							
 --------------------------------------------------------------------------------------
- This file contains SQL statements that will be appended to the build script.		
- Use SQLCMD syntax to include a file in the post-deployment script.			
- Example:      :r .\myfile.sql								
- Use SQLCMD syntax to reference a variable in the post-deployment script.		
- Example:      :setvar TableName MyTable							
-               SELECT * FROM [$(TableName)]					
+ This file contains SQL statements that will be appended to the build script.					
 --------------------------------------------------------------------------------------
 */
-:SETVAR LinuxOS "Linux"
-:SETVAR WindowsOS "Windows"
-:SETVAR SubSysTSQL "TSQL"
 
 USE [_dbaid];
 GO
@@ -77,7 +63,7 @@ DECLARE @DetectedOS NVARCHAR(7);
 IF EXISTS (SELECT 1 FROM sys.system_objects WHERE [name] = N'dm_os_host_info' AND [schema_id] = SCHEMA_ID(N'sys'))
   SELECT @DetectedOS = [host_platform] FROM sys.dm_os_host_info;
 ELSE 
-  SELECT @DetectedOS = N'$(WindowsOS)';
+  SELECT @DetectedOS = N'Windows';
 
 DECLARE @jobId BINARY(16)
 	,@JobTokenServer CHAR(22)
@@ -95,7 +81,7 @@ SELECT @JobTokenServer = N'$' + N'(ESCAPE_DQUOTE(SRVR))'
 	,@timestamp = CONVERT(VARCHAR(8), GETDATE(), 112) + CAST(DATEPART(HOUR, GETDATE()) AS VARCHAR(2)) + CAST(DATEPART(MINUTE, GETDATE()) AS VARCHAR(2)) + CAST(DATEPART(SECOND, GETDATE()) AS VARCHAR(2));
 
 /* Linux filesystems use forward slash for navigating folders, not backslash. */
-IF @DetectedOS = N'$(WindowsOS)'
+IF @DetectedOS = N'Windows'
   	SELECT @JobTokenLogDir = LEFT(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260)),LEN(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))) - CHARINDEX('\',REVERSE(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))))) + N'\';
 ELSE
 	SELECT @JobTokenLogDir = LEFT(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260)),LEN(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))) - CHARINDEX('/',REVERSE(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))))) + N'/';
@@ -129,11 +115,11 @@ BEGIN
 			@flags=2;
 
 		/* Set step to quit with success on success if on Linux - no second job step (yet) */
-		IF @DetectedOS = N'$(LinuxOS)'
+		IF @DetectedOS = N'Linux'
 		  EXEC msdb.dbo.sp_update_jobstep @job_id = @jobId, @step_id = 1, @on_success_action = 1;
 
 		/* Not valid for Linux. Need bash equivalent. */
-		IF @DetectedOS = N'$(WindowsOS)'
+		IF @DetectedOS = N'Windows'
 		BEGIN
 			SET @cmd = N'cmd /q /c "For /F "tokens=1 delims=" %v In (''ForFiles /P "' + @JobTokenLogDir + N'" /m "_dbaid_*.log" /d -30 2^>^&1'') do if EXIST "' + @JobTokenLogDir + N'"%v echo del "' + @JobTokenLogDir + N'"%v& del "' + @JobTokenLogDir + N'"\%v"'; 
 				
@@ -172,7 +158,7 @@ BEGIN
 
 
 		/* No support for @CleanupTime parameter on Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
+		IF @DetectedOS = N'Linux'
 		BEGIN
 			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''DIFF'', @CheckSum=''Y''';
 		END
@@ -186,7 +172,7 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_diff', 
 				@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 				@command=@cmd, 
-				@subsystem = N'$(SubSysTSQL)',
+				@subsystem = N'TSQL',
 				@output_file_name=@out,
 				@flags=2;
 
@@ -216,7 +202,7 @@ BEGIN
 
 
 		/* No support for @CleanupTime parameter on Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
+		IF @DetectedOS = N'Linux'
 		BEGIN
 			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y''';
 		END
@@ -231,7 +217,7 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_full', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd, 
-			@subsystem = N'$(SubSysTSQL)',
+			@subsystem = N'TSQL',
 			@output_file_name=@out,
 			@flags=2;
 
@@ -260,7 +246,7 @@ BEGIN
 			@job_id = @jobId OUTPUT;
 
 		/* No support for @CleanupTime parameter on Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
+		IF @DetectedOS = N'Linux'
 		BEGIN
 			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''LOG'', @CheckSum=''Y''';
 		END
@@ -274,7 +260,7 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_tran', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd, 
-			@subsystem = N'$(SubSysTSQL)',
+			@subsystem = N'TSQL',
 			@output_file_name=@out,
 			@flags=2;
 
@@ -303,7 +289,7 @@ BEGIN
 			@job_id = @jobId OUTPUT;
 
 		/* No support for @CleanupTime parameter on Linux. */
-		IF @DetectedOS = N'$(LinuxOS)'
+		IF @DetectedOS = N'Linux'
 		BEGIN
 			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''SYSTEM_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y''';
 		END
@@ -317,7 +303,7 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_system_full', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2,
 			@command=@cmd, 
-			@subsystem = N'$(SubSysTSQL)',
+			@subsystem = N'TSQL',
 			@output_file_name=@out,
 			@flags=2;
 
@@ -352,7 +338,7 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_index_optimise_user', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2,
 			@command=@cmd, 
-			@subsystem = N'$(SubSysTSQL)',
+			@subsystem = N'TSQL',
 			@output_file_name=@out,
 			@flags=2;
 
@@ -387,7 +373,7 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_index_optimise_system', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd, 
-			@subsystem = N'$(SubSysTSQL)',
+			@subsystem = N'TSQL',
 			@output_file_name=@out,
 			@flags=2;
 
@@ -422,7 +408,7 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_integrity_check_user', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd, 
-			@subsystem = N'$(SubSysTSQL)',
+			@subsystem = N'TSQL',
 			@output_file_name=@out,
 			@flags=2;
 
@@ -457,7 +443,7 @@ BEGIN
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_integrity_check_system',
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
 			@command=@cmd,
-			@subsystem = N'$(SubSysTSQL)',
+			@subsystem = N'TSQL',
 			@output_file_name=@out,
 			@flags=2;
 
