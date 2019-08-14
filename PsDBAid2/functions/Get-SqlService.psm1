@@ -31,13 +31,25 @@ function Get-SqlService
     $SqlServices = @()
 
 foreach ($Computer in $ComputerNames) {
-    $CimSess = New-CimSession -ComputerName $Computer -Credential $Credential -Authentication Negotiate
+    # Create new CIM session for CIM commands
+    if ($Credential) {
+        $CimSess = New-CimSession -ComputerName $Computer -Credential $Credential
+    }
+    else {
+        $CimSess = New-CimSession -ComputerName $Computer
+    }
+
+    # Get the highest number ComputerManagementVV version namespace.
     $NsLeaf = Get-CimInstance -CimSession $CimSess -Namespace $NsRoot -Class __NAMESPACE -Filter "Name LIKE 'ComputerManagement__'" | Sort-Object -Property Name -Descending | Select-Object -First 1 -ExpandProperty Name
+    
+    # Get the CIM info from SqlService class
     $CimObject = Get-CimInstance -CimSession $CimSess -Namespace "$NsRoot\$NsLeaf" -Class SqlService
 
+#region Custom PSObject
+    # Loop through CimObject and process properties and create custom PSObject to return.
     foreach ($Object in $CimObject) {
         $SqlServiceType = $(
-            Switch ($Object.SqlServiceType) {
+            switch ($Object.SqlServiceType) {
                 1  {'MSSQLSERVER'}
                 2  {'SQLSERVERAGENT'}
                 3  {'MSFTESQL'} 
@@ -53,7 +65,7 @@ foreach ($Computer in $ComputerNames) {
         })
 
         $ServiceState = $(
-            Switch ($Object.State) {
+            switch ($Object.State) {
                 1 {'Stopped'}
                 2 {'Start Pending'}
                 3 {'Stop Pending'}
@@ -73,14 +85,14 @@ foreach ($Computer in $ComputerNames) {
         })
 
         $SqlInstanceName = $(
-            Switch ($SqlServiceType) {
+            switch ($SqlServiceType) {
                 'MSSQLSERVER'    { $Object.BinaryPath.Substring($Object.BinaryPath.IndexOf('-s')+2).Trim() }
                 'SQLSERVERAGENT' { $Object.BinaryPath.Substring($Object.BinaryPath.IndexOf('-i')+2).Trim() }
                 default          { '' }
         })
 
         $TcpPort = $(
-            Switch ($SqlServiceType) {
+            switch ($SqlServiceType) {
                 'MSSQLSERVER'   { (Get-CimInstance -CimSession $CimSess -Namespace "$NsRoot\$NsLeaf" -Class ServerNetworkProtocolProperty -Filter "InstanceName = '$InstanceName' AND IPAddressName = 'IPAll' AND PropertyStrVal <> ''").PropertyStrVal }
                 default         { '' }
         })
@@ -96,11 +108,13 @@ foreach ($Computer in $ComputerNames) {
             TcpPort        = $TcpPort
         }
 
-        $SqlServices += New-Object psobject -Property $ServiceProperties
+        $SqlServices += New-Object PSCustomObject -Property $ServiceProperties
     }
+#endregion
 
+    # Remove CIM session
     Remove-CimSession -CimSession $CimSess
 }
-
+    # Return custom PSObject
     return $SqlServices 
 }
