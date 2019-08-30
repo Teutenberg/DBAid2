@@ -137,7 +137,7 @@ function Copy-Login
     $SourceServer = Connect-Sql -SqlServer $SourceSqlServer -Credential $Credential
     $SourceLogins = $SourceServer.Logins.Where({ $_.Sid -ne 1 -and $_.Name -notlike "##*" -and $_.Name -notin $Exclude -and ($_.Name -ilike $Filter -or $_Name -iin $Include) })
 
-    Write-Output -Message "Syncing logins between source and destination..."
+    Write-Output -Message "Copying logins from source to destinations..."
     Write-Output -Message "Connected to source server: $SourceSqlServer"
     Write-Verbose -Message "Source logins to be copied:"
     $SourceLogins | ForEach-Object { Write-Verbose -Message "`t$($_.Name)" }
@@ -166,7 +166,7 @@ function Copy-Login
                 }
             }
             else {
-                Write-Verbose -Message "User already exists: $($DestLogin.Name)"
+                Write-Verbose -Message "Login already exists: $($DestLogin.Name)"
             }
     
             foreach ($ServerPermission in $SourceServer.enumServerPermissions($SourceLogin.Name).PermissionType) {
@@ -181,5 +181,5 @@ function Copy-Login
         }
     }
 
-    Write-Output -Message "Syncing logins completed..."
+    Write-Output -Message "Copying logins completed..."
 }

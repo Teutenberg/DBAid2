@@ -33,8 +33,8 @@ function Get-User
 
         [Parameter(Mandatory=$true)]
         [ValidateNotNull()]
-        [System.String[]]
-        $Databases,
+        [System.String]
+        $Database,
 
         [Parameter()]
         [ValidateNotNull()]
@@ -55,10 +55,39 @@ function Get-User
     )
     
     $Server = Connect-Sql -SqlServer $SqlServer -Credential $Credential
-
-    foreach ($db in $Databases) {
-        $Users += $Server.Databases[$Database].Users.Where({ $_.Name -inotin $Exclude -and ($_.Name -ilike $Filter -or $_Name -iin $Include) })
-    }
-
+    $Users = $Server.Databases[$Database].Users.Where({ $_.Name -inotin $Exclude -and ($_.Name -ilike $Filter -or $_Name -iin $Include) })
     return $Users
+}
+
+function Set-User
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [System.String]
+        $SqlServer,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [System.String]
+        $Database,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [Microsoft.SqlServer.Management.Smo.User[]]
+        $Users,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Management.Automation.PSCredential]
+        $Credential
+    )
+    
+    $Server = Connect-Sql -SqlServer $SqlServer -Credential $Credential
+
+    foreach ($user in $Users) {
+        $Server.Databases[$Database].Users.Add($user)
+    } 
 }
