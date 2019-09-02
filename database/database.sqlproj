@@ -202,6 +202,7 @@
     <Build Include="checkmk\procedures\inventory_alwayson.sql" />
     <Build Include="checkmk\procedures\check_alwayson.sql" />
     <Build Include="view\active_backup_restore.sql" />
+    <Build Include="system\procedure\generate_database_permission_script.sql" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
