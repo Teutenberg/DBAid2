@@ -7,9 +7,6 @@
 
     .PARAMETER Credential
         PSCredential object to impersonate when connecting. 
-
-    .PARAMETER StatementTimeout
-        Set the query StatementTimeout in seconds. Default 600 seconds (10mins).
 #>
 function Get-SqlService
 {
