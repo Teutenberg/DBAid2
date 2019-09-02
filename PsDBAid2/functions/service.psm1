@@ -127,14 +127,17 @@ function Get-SqlService
     .PARAMETER SqlServer
         String containing the SQL Server to connect to.
 
-    .PARAMETER Credential
-        PSCredential object for PsDscRunAsCredential.
+    .PARAMETER ServiceType
+        The service type for InstanceName. { DatabaseEngine | SQLServerAgent }
 
-    .PARAMETER InstanceName
-        String containing the SQL Server Database Engine instance to connect to.
+    .PARAMETER ServiceAccount
+        The service account that should be used when running the service.
 
-    .PARAMETER StatementTimeout
-        Set the query StatementTimeout in seconds. Default 600 seconds (10mins).
+    .PARAMETER RestartService
+        Determines whether the service is automatically restarted when a change to the configuration was needed.
+
+    .PARAMETER Force
+        Forces the service account to be updated. Useful for password changes. This will cause Set-TargetResource to be run on each consecutive run.
 #>
 
 function Set-SqlService
@@ -193,7 +196,10 @@ function Set-SqlService
 
 <#
     .SYNOPSIS
-        Disbale all SQL Telemetry service accounts and set login account to local service. 
+        Set SQL Telemetry service. 
+
+    .PARAMETER Disable
+        Switch to disable all telemetry services.
 
     .PARAMETER SetLocalServiceAccount
         Switch to change the virtual service account to the built-in local service account.
