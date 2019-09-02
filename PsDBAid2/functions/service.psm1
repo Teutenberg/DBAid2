@@ -118,3 +118,126 @@ function Get-SqlService
         # Return custom PSObject
         return $SqlServices 
 }
+
+
+<#
+    .SYNOPSIS
+        Set SQL service account 
+
+    .PARAMETER SqlServer
+        String containing the SQL Server to connect to.
+
+    .PARAMETER Credential
+        PSCredential object for PsDscRunAsCredential.
+
+    .PARAMETER InstanceName
+        String containing the SQL Server Database Engine instance to connect to.
+
+    .PARAMETER StatementTimeout
+        Set the query StatementTimeout in seconds. Default 600 seconds (10mins).
+#>
+
+function Set-SqlService
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.String]
+        $SqlServer = $env:COMPUTERNAME,
+
+        [Parameter()]
+        [ValidateSet('DatabaseEngine','SQLServerAgent')]
+        [System.String]
+        $ServiceType = 'DatabaseEngine',
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [System.Management.Automation.PSCredential]
+        $ServiceAccount,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [switch]
+        $RestartService,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [switch]
+        $Force
+    )
+
+    $SqlServerParts = Split-SqlServerName -SqlServer $SqlServer
+
+    $Params = @{
+        ServerName     = $SqlServerParts.Host
+        InstanceName   = $SqlServerParts.Instance
+        ServiceType    = $ServiceType
+        ServiceAccount = $ServiceAccount
+        RestartService = $RestartService
+        Force          = $Force
+    }
+
+    Write-Verbose -Message "Configuring SQL service: $SqlServer"
+
+    if (Invoke-DscResource -ModuleName SqlServerDsc -Name SqlServiceAccount -Property $Params -Method Test) {
+        Write-Verbose 'Skipping - SQL service already configured...'
+    }
+    else {
+        Write-Verbose "Configuring SQL service..."
+        Invoke-DscResource -ModuleName SqlServerDsc -Name SqlServiceAccount -Property $Params -Method Set -Verbose
+    }
+}
+
+
+<#
+    .SYNOPSIS
+        Disbale all SQL Telemetry service accounts and set login account to local service. 
+
+    .PARAMETER SetLocalServiceAccount
+        Switch to change the virtual service account to the built-in local service account.
+        Useful if GPO's remove permission for virtual service account which can cause patching to fail. 
+#>
+
+function Set-SqlTelemetry
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [ValidateNotNull()]
+        [switch]
+        $Disable,
+
+        [Parameter()]
+        [ValidateNotNull()]
+        [switch]
+        $SetLocalServiceAccount
+    )
+
+    $Services = Get-Service | Where-Object { $_.ServiceName -ilike "SQLTELEMETRY*" } | Select-Object -ExpandProperty Name
+
+    foreach ($Service in $Services) {
+        $Params = @{
+            Name = $Service
+        }
+        
+        if ($Disable) {
+            $Params.Add('StartupType','Disabled')
+            $Params.Add('State','Stopped')
+        }
+
+        if ($SetLocalServiceAccount) {
+            $Params.Add('BuiltInAccount', 'LocalService')
+        }
+
+        if (Invoke-DscResource -ModuleName PSDesiredStateConfiguration -Name Service -Property $Params -Method Test) {
+            Write-Output 'Skipping - Telemetry already disabled...'
+        }
+        else {
+            Write-Output "Disabling Telemetry service $Service..."
+            Invoke-DscResource -ModuleName PSDesiredStateConfiguration -Name Service -Property $Params -Method Set -Verbose
+        }
+    }
+}
