@@ -234,7 +234,13 @@ function Enable-LogShipping
     Invoke-Command -ComputerName $sComputerName -ScriptBlock {if (!(Test-Path $Using:sLogShipDir)) { New-Item $Using:sLogShipDir -type directory }}
     
     Invoke-Command -ComputerName $pComputerName -ScriptBlock {
-        $SmbAccess = $Using:SqlSysAdminGroup, $Using:pServiceAccountSql, $Using:pServiceAccountAgt, $Using:sServiceAccountSql, $Using:sServiceAccountAgt
+        $SmbAccess = @($Using:SqlSysAdminGroup, 
+                        $Using:pServiceAccountSql, 
+                        $Using:pServiceAccountAgt, 
+                        $Using:sServiceAccountSql, 
+                        $Using:sServiceAccountAgt
+                    ) | Select-Object -Unique
+
         $acl = Get-Acl $Using:pLogShipDir
         $SmbAccess.Where({$_.Length -gt 0}).ForEach({$acl.SetAccessRule($(New-Object system.security.accesscontrol.filesystemaccessrule($_,"FullControl","ContainerInherit,ObjectInherit","None","Allow")))})
         Set-Acl $Using:pLogShipDir $acl
@@ -247,7 +253,7 @@ function Enable-LogShipping
     }
     
     Invoke-Command -ComputerName $sComputerName -ScriptBlock {
-        $SmbAccess = $Using:SqlSysAdminGroup, $Using:sServiceAccountSql, $Using:sServiceAccountAgt
+        $SmbAccess = @($Using:SqlSysAdminGroup, $Using:sServiceAccountSql, $Using:sServiceAccountAgt) | Select-Object -Unique
         $acl = Get-Acl $Using:sLogShipDir
         $SmbAccess.Where({$_.Length -gt 0}).ForEach({$acl.SetAccessRule($(New-Object system.security.accesscontrol.filesystemaccessrule($_,"FullControl","ContainerInherit,ObjectInherit","None","Allow")))})
         Set-Acl $Using:sLogShipDir $acl
