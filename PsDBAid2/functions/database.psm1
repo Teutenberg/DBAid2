@@ -98,42 +98,42 @@ function Enable-LogShipping
     Param(
         [parameter(Mandatory=$true, HelpMessage='(Mandatory) Primary Server - "HOST\INSTANCE"')]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [System.String]
         $PrimarySqlServer,
         
         [parameter(Mandatory=$true, HelpMessage='(Mandatory) Secondary Server - "HOST\INSTANCE"')]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [System.String]
         $SecondarySqlServer,
     
         [parameter(Mandatory=$true, HelpMessage='(Mandatory) Primary database - "DBNAME"')]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [System.String]
         $PrimaryDatabase,
     
         [parameter(Mandatory=$false, HelpMessage='(Optional) Secondary database - Default = PrimaryDatabase')]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [System.String]
         $SecondaryDatabase = $PrimaryDatabase,
          
         [parameter(Mandatory=$false, HelpMessage='(Optional) Primary directory path, D:\path - Default= Backup Path')]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [System.String]
         $PrimaryDir,
     
         [parameter(Mandatory=$false, HelpMessage='(Optional) Secondary directory path, D:\path - Default= Backup Path')]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [System.String]
         $SecondaryDir,
     
         [parameter(Mandatory=$false, HelpMessage='(Switch) Matches the primary database paths.')]
         [ValidateNotNullOrEmpty()]
-        [switch]
+        [Switch]
         $MatchDir,
     
         [parameter(Mandatory=$false, HelpMessage='(Optional) AD group to grant SMB share access to.')]
         [ValidateNotNullOrEmpty()]
-        [string]
+        [System.String]
         $SysAdminGroup,
 
         [Parameter()]
@@ -144,7 +144,6 @@ function Enable-LogShipping
 
     $ErrorActionPreference = "Stop"
 
-    #region: <# AUTO PARAMETERS #>
     $pConnectArgs = @{ SqlServer = $PrimarySqlServer }
     $sConnectArgs = @{ SqlServer = $SecondarySqlServer }
 
@@ -153,16 +152,17 @@ function Enable-LogShipping
         $sConnectArgs.Add('Credential', $Credential)
     }
 
+    <# Connect to SQL Servers #>
     $pSQLServerObject = Connect-Sql @pConnectArgs
     $sSQLServerObject = Connect-Sql @sConnectArgs
 
-    if (!$PrimaryDir) {
-        $PrimaryDir = Join-Path $pSQLServerObject.BackupDirectory "logshipping-primary\$PrimaryDatabase"
-    }
-    if (!$SecondaryDir) {
-        $SecondaryDir = Join-Path $sSQLServerObject.BackupDirectory "logshipping-secondary\$SecondaryDatabase"
-    }
-    
+    <# Set direcotries paths #>
+    if ([String]::IsNullOrEmpty($PrimaryDir)) { $PrimaryDir = $pSQLServerObject.BackupDirectory }
+    if ([String]::IsNullOrEmpty($SecondaryDir)) { $SecondaryDir = $sSQLServerObject.BackupDirectory }
+    $PrimaryDir = Join-Path $PrimaryDir "logshipping-primary\$PrimaryDatabase"
+    $SecondaryDir = Join-Path $SecondaryDir "logshipping-secondary\$SecondaryDatabase"
+
+    <# Collect primary variables #>
     $pServerInstance = $pSQLServerObject.Name
     $pComputerName = $pSQLServerObject.NetName
     $pInstanceId = $pSQLServerObject.ServiceInstanceId
@@ -173,7 +173,8 @@ function Enable-LogShipping
     $pSharePath = '\\' + (Join-Path $pComputerName $pShareName) 
     $pServiceAccountSql = $pSQLServerObject.ServiceAccount
     $pServiceAccountAgt = $pSQLServerObject.JobServer.ServiceAccount
-    
+
+    <# Collect secondary variables #>
     $sServerInstance = $sSQLServerObject.Name
     $sComputerName = $sSQLServerObject.NetName
     $sInstanceId = $sSQLServerObject.ServiceInstanceId
@@ -186,6 +187,7 @@ function Enable-LogShipping
     $sDefaultLogDir = $sSQLServerObject.DefaultLog
     $sMoveStr = ''
     
+    <# set smb share permmission variables #>
     $pSmbAccess = @($SysAdminGroup, $pServiceAccountSql, $pServiceAccountAgt, $sServiceAccountSql, $sServiceAccountAgt) | Where-Object { $_.Length -gt 0 } | Select-Object -Unique
     $sSmbAccess = @($SysAdminGroup, $sServiceAccountSql, $sServiceAccountAgt) | Where-Object { $_.Length -gt 0 } | Select-Object -Unique
 
@@ -252,16 +254,14 @@ function Enable-LogShipping
         EXEC msdb.dbo.sp_update_job @job_id = @RestoreJobId, @enabled = 1;
     END"
     
-    #endregion
-    
-    #region: SETUP LogShipping
+    <# Setup SMB share #>
     Set-SqlShare @pSqlShareArgs
     Set-SqlShare @sSqlShareArgs
     
+    <# Execute T-SQL to setup logshipping #>
     Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query $pAlterRecovery -OutputSqlErrors $true
     Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query $pBackupDatabase -OutputSqlErrors $true
     Invoke-Sqlcmd -ServerInstance $sServerInstance -Database 'master' -Query $sRestoreBackup -OutputSqlErrors $true
     Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query $pSetupLogShipping -OutputSqlErrors $true
     Invoke-Sqlcmd -ServerInstance $sServerInstance -Database 'master' -Query $sSetupLogShipping -OutputSqlErrors $true
-    #endregion
 }
