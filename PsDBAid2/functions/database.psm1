@@ -141,6 +141,9 @@ function Enable-LogShipping
         [System.Management.Automation.PSCredential]
         $Credential
     )
+
+    $ErrorActionPreference = "Stop"
+
     #region: <# AUTO PARAMETERS #>
     $pConnectArgs = @{ SqlServer = $PrimarySqlServer }
     $sConnectArgs = @{ SqlServer = $SecondarySqlServer }
@@ -152,7 +155,7 @@ function Enable-LogShipping
 
     $pSQLServerObject = Connect-Sql @pConnectArgs
     $sSQLServerObject = Connect-Sql @sConnectArgs
-    
+
     if (!$PrimaryDir) {
         $PrimaryDir = Join-Path $pSQLServerObject.BackupDirectory "logshipping-primary\$PrimaryDatabase"
     }
@@ -183,17 +186,39 @@ function Enable-LogShipping
     $sDefaultLogDir = $sSQLServerObject.DefaultLog
     $sMoveStr = ''
     
+    $pSmbAccess = @($SysAdminGroup, $pServiceAccountSql, $pServiceAccountAgt, $sServiceAccountSql, $sServiceAccountAgt) | Where-Object { $_.Length -gt 0 } | Select-Object -Unique
+    $sSmbAccess = @($SysAdminGroup, $sServiceAccountSql, $sServiceAccountAgt) | Where-Object { $_.Length -gt 0 } | Select-Object -Unique
+
+    $pSqlShareArgs = @{
+        ComputerName  = $pComputerName
+        Directory     = $pLogShipDir 
+        ShareName     = $pShareName 
+        ShareAccounts = $pSmbAccess
+    }
+
+    $sSqlShareArgs = @{
+        ComputerName  = $sComputerName
+        Directory     = $sLogShipDir 
+        ShareName     = $sShareName 
+        ShareAccounts = $sSmbAccess
+    }
+
+    if ($Credential) {
+        $pSqlShareArgs.Add('Credential', $Credential)
+        $sSqlShareArgs.Add('Credential', $Credential)
+    }
+
     if ($MatchDir) {
         $sMoveStr = ($pDatabaseFiles.ForEach({", MOVE '" + $_.Name + "' TO '" + $_.FileName.Replace($pInstanceId,$sInstanceId).Replace($PrimaryDatabase,$SecondaryDatabase) + "'"})) -join ''
     } else {
         $sMoveStr = ($pDatabaseFiles.ForEach({", MOVE '" + $_.Name + "' TO '" + (&{if ($_.Type -eq 'L') {$sDefaultLogDir} else {$sDefaultDataDir}}) + (Split-Path $_.FileName -Leaf).Replace($PrimaryDatabase,$SecondaryDatabase) + "'"})) -join ''
     }
     
-    $sRestoreBackup = "IF EXISTS (SELECT name FROM sys.databases WHERE name = N'$SecondaryDatabase') 
-    ALTER DATABASE [$SecondaryDatabase] SET SINGLE_USER WITH NO_WAIT; 
-    RESTORE DATABASE [$SecondaryDatabase] FROM DISK = N'$pSharePath\$PrimaryDatabase.bak' WITH REPLACE, NORECOVERY$sMoveStr"
+    $pAlterRecovery = "ALTER DATABASE [$PrimaryDatabase] SET RECOVERY FULL WITH NO_WAIT"
+    $pBackupDatabase = "BACKUP DATABASE [$PrimaryDatabase] TO DISK = N'$pSharePath\$PrimaryDatabase.bak' WITH NOINIT"
+    $sRestoreBackup = "RESTORE DATABASE [$SecondaryDatabase] FROM DISK = N'$pSharePath\$PrimaryDatabase.bak' WITH REPLACE, NORECOVERY$sMoveStr"
     
-    $pSetupLSSql = "DECLARE @BackupJobId UNIQUEIDENTIFIER, @RetCode INT;
+    $pSetupLogShipping = "DECLARE @BackupJobId UNIQUEIDENTIFIER, @RetCode INT;
     EXEC @RetCode = master.dbo.sp_add_log_shipping_primary_database @database = N'$PrimaryDatabase',@backup_directory = N'$pLogShipDir',@backup_share = N'$pSharePath'
         ,@backup_job_name = N'LSBackup_$PrimaryDatabase',@backup_retention_period = 4320,@backup_compression = 2,@backup_threshold = 60,@threshold_alert_enabled = 1
         ,@history_retention_period = 5760,@backup_job_id = @BackupJobId OUTPUT,@overwrite = 1; 
@@ -207,7 +232,7 @@ function Enable-LogShipping
         EXEC master.dbo.sp_add_log_shipping_primary_secondary @primary_database = N'$PrimaryDatabase',@secondary_server = N'$sServerInstance',@secondary_database = N'$SecondaryDatabase',@overwrite = 1;
     END"
     
-    $sSetupLSSql = "DECLARE @CopyJobId UNIQUEIDENTIFIER, @RestoreJobId UNIQUEIDENTIFIER, @RetCode INT;
+    $sSetupLogShipping = "DECLARE @CopyJobId UNIQUEIDENTIFIER, @RestoreJobId UNIQUEIDENTIFIER, @RetCode INT;
     EXEC @RetCode = master.dbo.sp_add_log_shipping_secondary_primary @primary_server = N'$pServerInstance', @primary_database = N'$PrimaryDatabase' 
         ,@backup_source_directory = N'$pSharePath ',@backup_destination_directory = N'$sSharePath' 
         ,@copy_job_name = N'LSCopy_$pServerInstance`_$PrimaryDatabase',@restore_job_name = N'LSRestore_$pServerInstance`_$PrimaryDatabase' 
@@ -230,45 +255,13 @@ function Enable-LogShipping
     #endregion
     
     #region: SETUP LogShipping
-    Invoke-Command -ComputerName $pComputerName -ScriptBlock {if (!(Test-Path $Using:pLogShipDir)) { New-Item $Using:pLogShipDir -type directory }}
-    Invoke-Command -ComputerName $sComputerName -ScriptBlock {if (!(Test-Path $Using:sLogShipDir)) { New-Item $Using:sLogShipDir -type directory }}
+    Set-SqlShare @pSqlShareArgs
+    Set-SqlShare @sSqlShareArgs
     
-    Invoke-Command -ComputerName $pComputerName -ScriptBlock {
-        $SmbAccess = @($Using:SqlSysAdminGroup, 
-                        $Using:pServiceAccountSql, 
-                        $Using:pServiceAccountAgt, 
-                        $Using:sServiceAccountSql, 
-                        $Using:sServiceAccountAgt
-                    ) | Select-Object -Unique
-
-        $acl = Get-Acl $Using:pLogShipDir
-        $SmbAccess.Where({$_.Length -gt 0}).ForEach({$acl.SetAccessRule($(New-Object system.security.accesscontrol.filesystemaccessrule($_,"FullControl","ContainerInherit,ObjectInherit","None","Allow")))})
-        Set-Acl $Using:pLogShipDir $acl
-    
-        if (Get-SmbShare | Where-Object { $_.Name -eq $Using:pShareName }) {
-            Grant-SmbShareAccess -Name $Using:pShareName -AccountName $SmbAccess.Where({$_.Length -gt 0}) -AccessRight Full -Force
-        } else {
-            New-SmbShare –Name $Using:pShareName –Path $Using:pLogShipDir -FullAccess $SmbAccess.Where({$_.Length -gt 0})
-        }
-    }
-    
-    Invoke-Command -ComputerName $sComputerName -ScriptBlock {
-        $SmbAccess = @($Using:SqlSysAdminGroup, $Using:sServiceAccountSql, $Using:sServiceAccountAgt) | Select-Object -Unique
-        $acl = Get-Acl $Using:sLogShipDir
-        $SmbAccess.Where({$_.Length -gt 0}).ForEach({$acl.SetAccessRule($(New-Object system.security.accesscontrol.filesystemaccessrule($_,"FullControl","ContainerInherit,ObjectInherit","None","Allow")))})
-        Set-Acl $Using:sLogShipDir $acl
-    
-        if (Get-SmbShare | Where-Object { $_.Name -eq $Using:sShareName }) {
-            Grant-SmbShareAccess -Name $Using:sShareName -AccountName $SmbAccess.Where({$_.Length -gt 0}) -AccessRight Full -Force
-        } else {
-            New-SmbShare –Name $Using:sShareName –Path $Using:sLogShipDir -FullAccess $SmbAccess.Where({$_.Length -gt 0})
-        }
-    }
-    
-    Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query "ALTER DATABASE [$PrimaryDatabase] SET RECOVERY FULL WITH NO_WAIT" -OutputSqlErrors $true
-    Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query "BACKUP DATABASE [$PrimaryDatabase] TO DISK = N'$pLogShipDir\$PrimaryDatabase.bak' WITH NOINIT" -OutputSqlErrors $true
+    Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query $pAlterRecovery -OutputSqlErrors $true
+    Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query $pBackupDatabase -OutputSqlErrors $true
     Invoke-Sqlcmd -ServerInstance $sServerInstance -Database 'master' -Query $sRestoreBackup -OutputSqlErrors $true
-    Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query $pSetupLSSql -OutputSqlErrors $true
-    Invoke-Sqlcmd -ServerInstance $sServerInstance -Database 'master' -Query $sSetupLSSql -OutputSqlErrors $true
+    Invoke-Sqlcmd -ServerInstance $pServerInstance -Database 'master' -Query $pSetupLogShipping -OutputSqlErrors $true
+    Invoke-Sqlcmd -ServerInstance $sServerInstance -Database 'master' -Query $sSetupLogShipping -OutputSqlErrors $true
     #endregion
 }
