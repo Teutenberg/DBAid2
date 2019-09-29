@@ -60,7 +60,7 @@ BEGIN
 					AND ISNULL([LB].[tran_backup_date], 0) < DATEADD(HOUR, -[C].[backup_check_tran_hour], GETDATE()))
 				THEN [C].[backup_check_alert]
 				ELSE 'OK' END AS [state]
-			,QUOTENAME([LB].[name]) 
+			,QUOTENAME([C].[name]) 
 			+ '; recovery_model=' + [DB].[recovery_model_desc]
 			+ CASE 
 				WHEN [C].[backup_check_full_hour] IS NOT NULL 
