@@ -63,15 +63,19 @@ BEGIN
 		('FilestreamEffectiveLevel');
 
 	SELECT [i].[instance_guid]
+		,[D1].[datetimeoffset]
 		,[property]
-		,CAST(SERVERPROPERTY([property]) AS NVARCHAR(128)) 
+		,[value]=CAST(SERVERPROPERTY([property]) AS NVARCHAR(128)) 
 	FROM @server_properties [p]
 		CROSS APPLY [system].[get_instance_guid]() [i]
+		CROSS APPLY [system].[get_datetimeoffset](SYSDATETIME()) [D1]
 	UNION 
 	SELECT [i].[instance_guid]
+		,[D1].[datetimeoffset]
 		,[property] = 'GlobalTraceFlags'
-		,REPLACE(REPLACE(REPLACE((SELECT [flag] FROM @flags WHERE [enabled]=1 AND [global]=1 FOR XML PATH('')),'</flag><flag>',', '),'<flag>', ''),'</flag>','')
+		,[value]=REPLACE(REPLACE(REPLACE((SELECT [flag] FROM @flags WHERE [enabled]=1 AND [global]=1 FOR XML PATH('')),'</flag><flag>',', '),'<flag>', ''),'</flag>','')
 	FROM [system].[get_instance_guid]() [i]
+		CROSS APPLY [system].[get_datetimeoffset](SYSDATETIME()) [D1]
 
 	IF (@update_execution_timestamp = 1)
 		MERGE INTO [collector].[last_execution] AS [Target]

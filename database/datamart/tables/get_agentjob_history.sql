@@ -4,7 +4,7 @@
 
 */
 
-CREATE TABLE [datamart].[stage_agentjob_history]
+CREATE TABLE [datamart].[get_agentjob_history]
 (
 	[instance_guid] UNIQUEIDENTIFIER NULL, 
     [run_datetime] DATETIMEOFFSET NULL,

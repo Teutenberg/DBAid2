@@ -27,9 +27,15 @@ BEGIN
 		,@casts = COALESCE(@casts + ', ', '') + QUOTENAME([col]) + N'=CAST(' + QUOTENAME([col]) + N' AS SQL_VARIANT)'
 	FROM @colist
 
-	SET @cmd = N'SELECT [instance_guid], [name], [property], [value] FROM (SELECT [i].[instance_guid], [name], ' 
-		+ @casts 
-		+ N' FROM sys.databases [d] CROSS APPLY [system].[get_instance_guid]() [i]) [p] UNPIVOT ([value] FOR [property] IN (' 
+	SET @cmd = N'SELECT [instance_guid], [datetimeoffset], [name], [property], [value] 
+		FROM (SELECT [i].[instance_guid]
+			,[o].[datetimeoffset]
+			,[name]
+			,' + @casts 
+		+ N' FROM sys.databases [d] 
+			CROSS APPLY [system].[get_instance_guid]() [i] 
+			CROSS APPLY [system].[get_datetimeoffset](NULL) [o]
+			) [p] UNPIVOT ([value] FOR [property] IN (' 
 		+ @columns 
 		+ N')) AS [unpvt];';
 	EXEC(@cmd);

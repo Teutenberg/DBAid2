@@ -4,12 +4,12 @@
 
 */
 
-CREATE FUNCTION [system].[get_datetimeoffset]  
+CREATE FUNCTION [system].[get_datetimeoffset] 
 (
-	@datetime DATETIME2 = NULL
+	@datetime DATETIME2
 )
 RETURNS TABLE
 WITH ENCRYPTION
 RETURN(
-	SELECT TODATETIMEOFFSET(@datetime, DATEPART(TZOFFSET, SYSDATETIMEOFFSET())) AS [datetimeoffset]
+	SELECT TODATETIMEOFFSET(ISNULL(@datetime,SYSDATETIME()), DATEPART(TZOFFSET, SYSDATETIMEOFFSET())) AS [datetimeoffset]
 )

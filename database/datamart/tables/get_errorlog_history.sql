@@ -4,7 +4,7 @@
 
 */
 
-CREATE TABLE [datamart].[stage_errorlog_history]
+CREATE TABLE [datamart].[get_errorlog_history]
 (
 	[instance_guid] UNIQUEIDENTIFIER NULL,
 	[log_date] DATETIMEOFFSET NULL,

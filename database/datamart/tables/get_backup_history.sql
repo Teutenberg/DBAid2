@@ -4,7 +4,7 @@
 
 */
 
-CREATE TABLE [datamart].[stage_backup_history]
+CREATE TABLE [datamart].[get_backup_history]
 (
 	[instance_guid] UNIQUEIDENTIFIER NULL,
 	[database_name] NVARCHAR(127) NULL,

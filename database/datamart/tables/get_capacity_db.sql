@@ -4,7 +4,7 @@
 
 */
 
-CREATE TABLE [datamart].[stage_capacity_db]
+CREATE TABLE [datamart].[get_capacity_db]
 (
 	[instance_guid] UNIQUEIDENTIFIER NULL,
 	[datetimeoffset] DATETIMEOFFSET NULL,
