@@ -20,10 +20,10 @@ BEGIN
 
 	IF (@sanitise = 1)
 	BEGIN
-		SELECT CAST([value] AS VARCHAR(36)) FROM [system].[configuration] WHERE [key] = N'INSTANCE_GUID'
+		SELECT [instance_tag]=CAST([value] AS VARCHAR(36)) FROM [system].[configuration] WHERE [key] = N'INSTANCE_GUID'
 	END
 	ELSE
 	BEGIN
-		SELECT CAST(SERVERPROPERTY('MachineName') AS VARCHAR(128)) + '_' +  @@SERVICENAME + '_' + REPLACE(@domain, '.', '_') AS [instance_tag];
+		SELECT [instance_tag]=CAST(SERVERPROPERTY('MachineName') AS VARCHAR(128)) + '_' +  @@SERVICENAME + '_' + REPLACE(@domain, '.', '_');
 	END
 END
