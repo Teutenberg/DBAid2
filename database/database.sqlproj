@@ -183,17 +183,11 @@
     <Build Include="collector\procedures\get_instance_ci.sql" />
     <Build Include="collector\procedures\get_database_ci.sql" />
     <Build Include="collector\procedures\get_capacity_db.sql" />
-    <Build Include="datamart\tables\stage_agentjob_history.sql" />
-    <Build Include="datamart\tables\stage_backup_history.sql" />
-    <Build Include="datamart\tables\stage_errorlog_history.sql" />
-    <Build Include="datamart\tables\load_file_log.sql" />
-    <Build Include="datamart\procedures\process_stage_data.sql" />
     <Build Include="datamart\tables\dim_database.sql" />
     <Build Include="datamart\tables\dim_date.sql" />
     <Build Include="datamart\tables\dim_instance.sql" />
     <Build Include="datamart\tables\dim_time.sql" />
     <Build Include="datamart\tables\fact_errorlog_history.sql" />
-    <Build Include="datamart\tables\stage_capacity_db.sql" />
     <Build Include="datamart\tables\fact_agentjob_history.sql" />
     <Build Include="datamart\tables\fact_backup_history.sql" />
     <Build Include="datamart\tables\fact_capacity_db.sql" />
@@ -203,6 +197,16 @@
     <Build Include="checkmk\procedures\check_alwayson.sql" />
     <Build Include="view\active_backup_restore.sql" />
     <Build Include="system\procedure\generate_database_permission_script.sql" />
+    <Build Include="datamart\procedures\process_get_data.sql" />
+    <Build Include="datamart\tables\fact_database_ci.sql" />
+    <Build Include="datamart\tables\fact_instance_ci.sql" />
+    <Build Include="datamart\tables\get_agentjob_history.sql" />
+    <Build Include="datamart\tables\get_backup_history.sql" />
+    <Build Include="datamart\tables\get_capacity_db.sql" />
+    <Build Include="datamart\tables\get_database_ci.sql" />
+    <Build Include="datamart\tables\get_errorlog_history.sql" />
+    <Build Include="datamart\tables\get_instance_ci.sql" />
+    <Build Include="datamart\tables\load_log.sql" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
