@@ -5,6 +5,9 @@
 */
 
 CREATE PROCEDURE [checkmk].[check_integrity]
+(
+	@writelog BIT = 0
+)
 WITH ENCRYPTION
 AS
 BEGIN
@@ -55,23 +58,40 @@ BEGIN
 		FROM [DbccDataSet]
 		ORDER BY [name];
 
-		IF (SELECT COUNT(*) FROM @check_output WHERE [state] NOT IN ('OK')) < 1
+	IF (SELECT COUNT(*) FROM @check_output WHERE [state] NOT IN ('OK')) < 1
+	BEGIN
+		SELECT @dbcheckdb=COUNT(*) 
+		FROM [checkmk].[config_database] 
+		WHERE [integrity_check_enabled] = 1
+			AND [name] <> N'tempdb';
+
+		SELECT @dbnotcheckdb=COUNT(*) 
+		FROM [checkmk].[config_database] 
+		WHERE [integrity_check_enabled] = 0
+			AND [name] <> N'tempdb';
+
+		INSERT INTO @check_output 
+		VALUES('NA', CAST(@dbcheckdb AS NVARCHAR(10)) + ' database(s) monitored, ' + CAST(@dbnotcheckdb AS NVARCHAR(10)) + ' database(s) opted-out');
+	END 
+
+	SELECT [state], [message] FROM @check_output WHERE [state] NOT IN ('OK');
+
+	IF (@writelog = 1)
+	BEGIN
+		DECLARE @ErrorMsg NVARCHAR(2048);
+		DECLARE ErrorCurse CURSOR FAST_FORWARD
+		FOR SELECT [state] + N' - ' + [message] FROM @check_output WHERE [state] NOT IN ('NA','OK');
+
+		OPEN ErrorCurse;
+		FETCH NEXT FROM ErrorCurse INTO @ErrorMsg
+
+		WHILE (@@FETCH_STATUS=0)
 		BEGIN
-			SELECT @dbcheckdb=COUNT(*) 
-			FROM [checkmk].[config_database] 
-			WHERE [integrity_check_enabled] = 1
-			  AND [name] <> N'tempdb';
+			EXEC xp_logevent 54321, @ErrorMsg, 'WARNING';  
+			FETCH NEXT FROM ErrorCurse INTO @ErrorMsg
+		END
 
-			SELECT @dbnotcheckdb=COUNT(*) 
-			FROM [checkmk].[config_database] 
-			WHERE [integrity_check_enabled] = 0
-			  AND [name] <> N'tempdb';
-
-			INSERT INTO @check_output 
-			VALUES('NA', CAST(@dbcheckdb AS NVARCHAR(10)) + ' database(s) monitored, ' + CAST(@dbnotcheckdb AS NVARCHAR(10)) + ' database(s) opted-out');
-		END 
-
-		SELECT [state], [message]
-		FROM @check_output 
-		WHERE [state] NOT IN ('OK');
+		CLOSE ErrorCurse;
+		DEALLOCATE ErrorCurse;
+	END
 END

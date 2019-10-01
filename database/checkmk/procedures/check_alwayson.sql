@@ -5,6 +5,9 @@
 */
 
 CREATE PROCEDURE [checkmk].[check_alwayson]
+(
+	@writelog BIT = 0
+)
 WITH ENCRYPTION
 AS
 BEGIN
@@ -49,7 +52,28 @@ BEGIN
 		ELSE
 		BEGIN
 			IF EXISTS (SELECT 1 FROM @check_output WHERE [state] IN ('CRITICAL','WARNING'))
+			BEGIN
 				SELECT [state], [message] FROM @check_output WHERE [state] NOT IN ('OK');
+
+				IF (@writelog = 1)
+				BEGIN
+					DECLARE @ErrorMsg NVARCHAR(2048);
+					DECLARE ErrorCurse CURSOR FAST_FORWARD
+					FOR SELECT [state] + N' - ' + [message] FROM @check_output WHERE [state] NOT IN ('NA','OK');
+
+					OPEN ErrorCurse;
+					FETCH NEXT FROM ErrorCurse INTO @ErrorMsg
+
+					WHILE (@@FETCH_STATUS=0)
+					BEGIN
+						EXEC xp_logevent 54321, @ErrorMsg, 'WARNING';  
+						FETCH NEXT FROM ErrorCurse INTO @ErrorMsg
+					END
+
+					CLOSE ErrorCurse;
+					DEALLOCATE ErrorCurse;
+				END
+			END
 			ELSE
 				SELECT 'OK' AS [state], 'Always-On ('+(SELECT CAST(COUNT(*) AS NVARCHAR(3)) FROM @check_output) +') availability groups healthy.' AS [message];
 		END

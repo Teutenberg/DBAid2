@@ -5,6 +5,9 @@
 */
 
 CREATE PROCEDURE [checkmk].[check_agentjob]
+(
+	@writelog BIT = 0
+)
 WITH ENCRYPTION
 AS
 BEGIN
@@ -157,4 +160,23 @@ BEGIN
 	END
 
 	SELECT [state], [message] FROM @check_output;
+
+	IF (@writelog = 1)
+	BEGIN
+		DECLARE @ErrorMsg NVARCHAR(2048);
+		DECLARE ErrorCurse CURSOR FAST_FORWARD
+		FOR SELECT [state] + N' - ' + [message] FROM @check_output WHERE [state] NOT IN ('NA','OK');
+
+		OPEN ErrorCurse;
+		FETCH NEXT FROM ErrorCurse INTO @ErrorMsg
+
+		WHILE (@@FETCH_STATUS=0)
+		BEGIN
+			EXEC xp_logevent 54321, @ErrorMsg, 'WARNING';  
+			FETCH NEXT FROM ErrorCurse INTO @ErrorMsg
+		END
+
+		CLOSE ErrorCurse;
+		DEALLOCATE ErrorCurse;
+	END
 END
