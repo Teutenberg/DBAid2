@@ -505,10 +505,7 @@ BEGIN
 			@category_name=N'_dbaid_maintenance',
 			@job_id = @jobId OUTPUT;
 
-		SET @cmd = N'USE [$(DB_NAME)];
-GO
-
-EXEC [checkmk].[inventory_agentjob]
+		SET @cmd = N'EXEC [checkmk].[inventory_agentjob]
 EXEC [checkmk].[inventory_alwayson]
 EXEC [checkmk].[inventory_database]
 GO
@@ -525,6 +522,7 @@ GO';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_checkmk_writelog',
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
+			@database_name=N'_dbaid',
 			@command=@cmd,
 			@subsystem = N'TSQL',
 			@flags=2;
