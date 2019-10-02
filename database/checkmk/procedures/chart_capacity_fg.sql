@@ -5,6 +5,9 @@
 */
 
 CREATE PROCEDURE [checkmk].[chart_capacity_fg] 
+(
+	@writelog BIT = 0
+)
 WITH ENCRYPTION
 AS
 BEGIN
@@ -29,6 +32,16 @@ BEGIN
 								[file_id] INT,
 								[size_available_mb] NUMERIC(20,2),
 								[disk_available_mb] NUMERIC(20,2));
+
+	DECLARE @check_output TABLE([name] NVARCHAR(256),
+								[used] NUMERIC(20,2),
+								[reserved] NUMERIC(20,2),
+								[max] NUMERIC(20,2),
+								[warning] NUMERIC(20,2),
+								[critical] NUMERIC(20,2),
+								[uom] CHAR(2),
+								[state] VARCHAR(8), 
+								[message] NVARCHAR(4000));
 
 	/* Sometimes dm_os_volume_stats doesn't return disk volume information due to wonky permissions in the OS. Using xp_fixeddrives for now. */
 	INSERT INTO @drive_info
@@ -203,6 +216,7 @@ BEGIN
 			,[C].[capacity_check_critical_free]
 			,[C].[capacity_check_warning_free]
 	)
+	INSERT INTO @check_output
 	SELECT [database_name] + N'_' + [data_space] AS [name]
 		,[used]
 		,[reserved]
@@ -210,6 +224,44 @@ BEGIN
 		,[warning]
 		,[critical]
 		,'MB' AS [uom]
+		,[check].[state]
+		,[message]=[database_name] 
+			+ N'_' 
+			+ [data_space] 
+			+ N'; used=' 
+			+ CAST([used] AS NVARCHAR(10)) 
+			+ N'; reserved=' 
+			+ CAST([reserved] AS NVARCHAR(10)) 
+			+ N'; max=' 
+			+ CAST([max] AS NVARCHAR(10))
 	FROM Dataset
+		CROSS APPLY (SELECT [state]=CASE 
+			WHEN [used] < [warning] THEN N'OK' 
+			WHEN [used] >= [warning] AND [used] < [critical] THEN N'WARNING' 
+			WHEN [used] >= [critical] THEN N'CRITICAL' 
+			ELSE N'NA' END) [check]
 	ORDER BY [database_name], [data_space];
-END;
+
+	SELECT * FROM @check_output;
+
+	IF (@writelog = 1)
+	BEGIN
+		DECLARE @ErrorMsg NVARCHAR(2048);
+		DECLARE ErrorCurse CURSOR FAST_FORWARD FOR 
+			SELECT [state] + N' - ' + OBJECT_NAME(@@PROCID) + N' - ' + [message] 
+			FROM @check_output 
+			WHERE [state] NOT IN ('NA','OK');
+
+		OPEN ErrorCurse;
+		FETCH NEXT FROM ErrorCurse INTO @ErrorMsg;
+
+		WHILE (@@FETCH_STATUS=0)
+		BEGIN
+			EXEC xp_logevent 54321, @ErrorMsg, 'WARNING';  
+			FETCH NEXT FROM ErrorCurse INTO @ErrorMsg;
+		END
+
+		CLOSE ErrorCurse;
+		DEALLOCATE ErrorCurse;
+	END
+END

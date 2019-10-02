@@ -14,7 +14,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	DECLARE @countjob INT, @runtimejob INT, @failstatusjob INT, @cancelstatusjob INT;
-	DECLARE @check_output TABLE([state] VARCHAR(8), [message] VARCHAR(4000));
+	DECLARE @check_output TABLE([state] VARCHAR(8), [message] NVARCHAR(4000));
 
 	DECLARE @jobactivity TABLE (
 			[session_id] int NULL,
@@ -164,16 +164,18 @@ BEGIN
 	IF (@writelog = 1)
 	BEGIN
 		DECLARE @ErrorMsg NVARCHAR(2048);
-		DECLARE ErrorCurse CURSOR FAST_FORWARD
-		FOR SELECT [state] + N' - ' + [message] FROM @check_output WHERE [state] NOT IN ('NA','OK');
+		DECLARE ErrorCurse CURSOR FAST_FORWARD FOR 
+			SELECT [state] + N' - ' + OBJECT_NAME(@@PROCID) + N' - ' + [message] 
+			FROM @check_output 
+			WHERE [state] NOT IN ('NA','OK');
 
 		OPEN ErrorCurse;
-		FETCH NEXT FROM ErrorCurse INTO @ErrorMsg
+		FETCH NEXT FROM ErrorCurse INTO @ErrorMsg;
 
 		WHILE (@@FETCH_STATUS=0)
 		BEGIN
 			EXEC xp_logevent 54321, @ErrorMsg, 'WARNING';  
-			FETCH NEXT FROM ErrorCurse INTO @ErrorMsg
+			FETCH NEXT FROM ErrorCurse INTO @ErrorMsg;
 		END
 
 		CLOSE ErrorCurse;
