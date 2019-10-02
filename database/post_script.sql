@@ -495,6 +495,56 @@ BEGIN
 	COMMIT TRANSACTION
 	END
 
+	SET @jobId = NULL;
+
+	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_checkmk_writelog')
+	BEGIN
+	BEGIN TRANSACTION
+		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_checkmk_writelog', @owner_login_name=@owner,
+			@enabled=0,
+			@category_name=N'_dbaid_maintenance',
+			@job_id = @jobId OUTPUT;
+
+		SET @cmd = N'USE [$(DB_NAME)];
+GO
+
+EXEC [checkmk].[inventory_agentjob]
+EXEC [checkmk].[inventory_alwayson]
+EXEC [checkmk].[inventory_database]
+GO
+
+EXEC [checkmk].[chart_capacity_fg] @writelog = 1
+EXEC [checkmk].[check_agentjob] @writelog = 1
+EXEC [checkmk].[check_alwayson] @writelog = 1
+EXEC [checkmk].[check_backup] @writelog = 1
+EXEC [checkmk].[check_database] @writelog = 1
+EXEC [checkmk].[check_integrity] @writelog = 1
+EXEC [checkmk].[check_logshipping] @writelog = 1
+EXEC [checkmk].[check_mirroring] @writelog = 1
+GO';
+
+		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_checkmk_writelog',
+			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
+			@command=@cmd,
+			@subsystem = N'TSQL',
+			@flags=2;
+
+		IF EXISTS (SELECT TOP(1) [schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_checkmk_writelog')
+		BEGIN
+			SET @schid = NULL;
+			SELECT TOP(1) @schid=[schedule_id] FROM msdb.dbo.sysschedules WHERE [name] = N'_dbaid_checkmk_writelog';
+			EXEC msdb.dbo.sp_attach_schedule @job_id=@jobId,@schedule_id=@schid
+		END
+		ELSE
+			EXEC msdb.dbo.sp_add_jobschedule @job_id=@jobId, @name=N'_dbaid_checkmk_writelog',
+				@enabled=1, @freq_type=4, @freq_interval=1, @freq_subday_type=4, @freq_subday_interval=15, @active_start_time=0;
+
+		EXEC msdb.dbo.sp_add_jobserver @job_id=@jobId, @server_name = N'(local)';
+	COMMIT TRANSACTION
+	END
+
+	
+
 	/* Create SQL Agent alert */
 	DECLARE @alertname NVARCHAR(128);
 	SELECT @alertname = [name] FROM msdb.dbo.sysalerts WHERE [message_id] = 1480;
