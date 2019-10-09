@@ -64,20 +64,14 @@ SET @Slash = '\'
 IF EXISTS (SELECT 1 FROM sys.system_objects WHERE [name] = N'dm_os_host_info' AND [schema_id] = SCHEMA_ID(N'sys'))
 	IF ((SELECT [host_platform] FROM sys.dm_os_host_info) LIKE N'%Linux%')
 	BEGIN
-		/* Linux filesystems use forward slash for navigating folders, not backslash. */
 		SET @DetectedOS = 'Linux'
-		SET @Slash = '/'
+		SET @Slash = '/' /* Linux filesystems use forward slash for navigating folders, not backslash. */
 	END
-	ELSE IF ((SELECT SERVERPROPERTY('EngineEdition')) = 8)
-	BEGIN
+	ELSE IF ((SELECT SERVERPROPERTY('EngineEdition')) = 8) 
 		SET @DetectedOS = 'AzureManagedInstance'
-	END
-	ELSE
-	BEGIN
-		SET @DetectedOS = 'Windows'
-	END
+	ELSE SET @DetectedOS = 'Windows' /* If it's not Linux or Azure Managed Instance, then we assume Windows. */
 ELSE 
-	SELECT @DetectedOS = N'Windows';
+	SELECT @DetectedOS = N'Windows'; /* if dm_os_host_info object doesn't exist, then we assume Windows. */
 
 DECLARE @jobId BINARY(16)
 	,@JobTokenServer CHAR(22)
