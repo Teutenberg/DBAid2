@@ -57,13 +57,28 @@ GO
 USE [msdb]
 GO
 
-DECLARE @DetectedOS NVARCHAR(7);
+DECLARE @DetectedOS NVARCHAR(7), @Slash NCHAR(1);
 
 /* sys.dm_os_host_info is relatively new (SQL 2017+ despite what BOL says; not from 2008). If it's there, query it (result being 'Linux' or 'Windows'). If not there, it's Windows. */
 IF EXISTS (SELECT 1 FROM sys.system_objects WHERE [name] = N'dm_os_host_info' AND [schema_id] = SCHEMA_ID(N'sys'))
-  SELECT @DetectedOS = [host_platform] FROM sys.dm_os_host_info;
+	IF ((SELECT SERVERPROPERTY('EngineEdition')) = 8)
+	BEGIN
+		SET @DetectedOS = 'AzureManagedInstance'
+		SET @Slash = '\'
+	END
+	ELSE IF ((SELECT [host_platform] FROM sys.dm_os_host_info) LIKE N'%Linux%')
+	BEGIN
+		/* Linux filesystems use forward slash for navigating folders, not backslash. */
+		SET @DetectedOS = 'Linux'
+		SET @Slash = '/'
+	END
+	ELSE
+	BEGIN
+		SET @DetectedOS = 'Windows'
+		SET @Slash = '\'
+	END
 ELSE 
-  SELECT @DetectedOS = N'Windows';
+	SELECT @DetectedOS = N'Windows';
 
 DECLARE @jobId BINARY(16)
 	,@JobTokenServer CHAR(22)
@@ -80,11 +95,7 @@ SELECT @JobTokenServer = N'$' + N'(ESCAPE_DQUOTE(SRVR))'
 	,@owner = (SELECT [name] FROM sys.server_principals WHERE [sid] = 0x01)
 	,@timestamp = CONVERT(VARCHAR(8), GETDATE(), 112) + CAST(DATEPART(HOUR, GETDATE()) AS VARCHAR(2)) + CAST(DATEPART(MINUTE, GETDATE()) AS VARCHAR(2)) + CAST(DATEPART(SECOND, GETDATE()) AS VARCHAR(2));
 
-/* Linux filesystems use forward slash for navigating folders, not backslash. */
-IF @DetectedOS = N'Windows'
-  	SELECT @JobTokenLogDir = LEFT(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260)),LEN(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))) - CHARINDEX('\',REVERSE(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))))) + N'\';
-ELSE
-	SELECT @JobTokenLogDir = LEFT(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260)),LEN(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))) - CHARINDEX('/',REVERSE(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))))) + N'/';
+SELECT @JobTokenLogDir = LEFT(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260)),LEN(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))) - CHARINDEX(@Slash,REVERSE(CAST(SERVERPROPERTY('ErrorLogFileName') AS NVARCHAR(260))))) + @Slash;
 
 IF ((SELECT LOWER(CAST(SERVERPROPERTY('Edition') AS NVARCHAR(128)))) LIKE '%express%')
 	PRINT 'Express Edition Detected. No SQL Agent.';
@@ -114,9 +125,9 @@ BEGIN
 			@output_file_name=@out,
 			@flags=2;
 
-		/* Set step to quit with success on success if on Linux - no second job step (yet) */
-		IF @DetectedOS = N'Linux'
-		  EXEC msdb.dbo.sp_update_jobstep @job_id = @jobId, @step_id = 1, @on_success_action = 1;
+		/* Set step to quit with success on success if on Linux - no second job step (yet). No logs to cleanup on Azure managed instance. */
+		IF @DetectedOS IN (N'Linux', N'AzureManagedInstance')
+			EXEC msdb.dbo.sp_update_jobstep @job_id = @jobId, @step_id = 1, @on_success_action = 1;
 
 		/* Not valid for Linux. Need bash equivalent. */
 		IF @DetectedOS = N'Windows'
@@ -148,7 +159,7 @@ BEGIN
 
 	SET @jobId = NULL;
 
-	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_diff')
+	IF (NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_diff') AND @DetectedOS NOT IN (N'AzureManagedInstance'))
 	BEGIN
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_backup_user_diff', @owner_login_name=@owner,
@@ -156,18 +167,11 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-
 		/* No support for @CleanupTime parameter on Linux. */
-		IF @DetectedOS = N'Linux'
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''DIFF'', @CheckSum=''Y''';
-		END
-		ELSE
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''DIFF'', @CheckSum=''Y'', @CleanupTime=72';
-		END
-			
-		SET @out = @JobTokenLogDir + N'_dbaid_backup_user_diff_' + @JobTokenDateTime + N'.log';
+		SELECT @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'',@BackupType=''DIFF'',@CheckSum=''Y''' 
+			+ CASE @DetectedOS WHEN N'Windows' THEN N',@CleanupTime=72' ELSE N';' END;
+
+		SELECT @out = @JobTokenLogDir + N'_dbaid_backup_user_diff_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_diff', 
 				@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
@@ -192,7 +196,7 @@ BEGIN
 
 	SET @jobId = NULL;
 
-	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_full')
+	IF (NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_full') AND @DetectedOS NOT IN (N'AzureManagedInstance'))
 	BEGIN
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_backup_user_full', @owner_login_name=@owner,
@@ -200,19 +204,10 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
+		SELECT @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'',@BackupType=''FULL'',@CheckSum=''Y''' 
+			+ CASE @DetectedOS WHEN N'Windows' THEN N',@CleanupTime=72' ELSE N';' END;
 
-		/* No support for @CleanupTime parameter on Linux. */
-		IF @DetectedOS = N'Linux'
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y''';
-		END
-		ELSE
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y'', @CleanupTime=72';
-		END
-
-		
-		SET @out = @JobTokenLogDir + N'_dbaid_backup_user_full_' + @JobTokenDateTime + N'.log';
+		SELECT @out = @JobTokenLogDir + N'_dbaid_backup_user_full_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_full', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
@@ -237,7 +232,7 @@ BEGIN
 
 	SET @jobId = NULL;
 
-	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_tran')
+	IF (NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_user_tran') AND @DetectedOS NOT IN (N'AzureManagedInstance'))
 	BEGIN
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_backup_user_tran', @owner_login_name=@owner,
@@ -245,17 +240,10 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		/* No support for @CleanupTime parameter on Linux. */
-		IF @DetectedOS = N'Linux'
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''LOG'', @CheckSum=''Y''';
-		END
-		ELSE
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'', @BackupType=''LOG'', @CheckSum=''Y'', @CleanupTime=72';
-		END
-		
-		SET @out = @JobTokenLogDir + N'_dbaid_backup_user_tran_' + @JobTokenDateTime + N'.log';
+		SELECT @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''USER_DATABASES'',@BackupType=''LOG'',@CheckSum=''Y''' 
+			+ CASE @DetectedOS WHEN N'Windows' THEN N',@CleanupTime=72' ELSE N';' END;
+
+		SELECT @out = @JobTokenLogDir + N'_dbaid_backup_user_tran_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_user_tran', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, 
@@ -280,7 +268,7 @@ BEGIN
 
 	SET @jobId = NULL;
 
-	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_system_full')
+	IF (NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_backup_system_full') AND @DetectedOS NOT IN (N'AzureManagedInstance'))
 	BEGIN
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_backup_system_full', @owner_login_name=@owner,
@@ -288,17 +276,10 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		/* No support for @CleanupTime parameter on Linux. */
-		IF @DetectedOS = N'Linux'
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''SYSTEM_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y''';
-		END
-		ELSE
-		BEGIN
-			SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''SYSTEM_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y'', @CleanupTime=72';
-		END
+		SELECT @cmd = N'EXEC [_dbaid].[dbo].[DatabaseBackup] @Databases=''SYSTEM_DATABASES'', @BackupType=''FULL'', @CheckSum=''Y''' 
+			+ CASE @DetectedOS WHEN N'Windows' THEN N', @CleanupTime=72' ELSE N';' END;
 
-		SET @out = @JobTokenLogDir + N'_dbaid_backup_system_full_' + @JobTokenDateTime + N'.log';
+		SELECT @out = @JobTokenLogDir + N'_dbaid_backup_system_full_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_backup_system_full', 
 			@step_id=1, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2,
@@ -331,8 +312,7 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		SET @cmd = N'EXEC [_dbaid].[dbo].[IndexOptimize] @Databases=''USER_DATABASES'', @UpdateStatistics=''ALL'', @OnlyModifiedStatistics=''Y'', @StatisticsResample=''Y'', @MSShippedObjects=''Y'', @LockTimeout=600, @LogToTable=''Y''';
-
+		SET @cmd = N'EXEC [_dbaid].[dbo].[IndexOptimize] @Databases=''USER_DATABASES'',@UpdateStatistics=''ALL'',@OnlyModifiedStatistics=''Y'',@StatisticsResample=''Y'',@MSShippedObjects=''Y'',@LockTimeout=600,@LogToTable=''Y''';
 		SET @out = @JobTokenLogDir + N'_dbaid_index_optimise_user_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_index_optimise_user', 
@@ -366,8 +346,7 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		SET @cmd = N'EXEC [_dbaid].[dbo].[IndexOptimize] @Databases=''SYSTEM_DATABASES'', @UpdateStatistics=''ALL'', @OnlyModifiedStatistics=''Y'', @StatisticsResample=''Y'', @MSShippedObjects=''Y'', @LockTimeout=600, @LogToTable=''Y''';
-
+		SET @cmd = N'EXEC [_dbaid].[dbo].[IndexOptimize] @Databases=''SYSTEM_DATABASES'',@UpdateStatistics=''ALL'',@OnlyModifiedStatistics=''Y'',@StatisticsResample=''Y'',@MSShippedObjects=''Y'',@LockTimeout=600,@LogToTable=''Y''';
 		SET @out = @JobTokenLogDir + N'_dbaid_index_optimise_system_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_index_optimise_system', 
@@ -401,8 +380,7 @@ BEGIN
 			@category_name=N'_dbaid_maintenance', 
 			@job_id = @jobId OUTPUT;
 
-		SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseIntegrityCheck] @Databases=''USER_DATABASES'', @CheckCommands=''CHECKDB'', @LockTimeout=600, @LogToTable=''Y''';
-
+		SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseIntegrityCheck] @Databases=''USER_DATABASES'',@CheckCommands=''CHECKDB'',@LockTimeout=600,@LogToTable=''Y''';
 		SET @out = @JobTokenLogDir + N'_dbaid_integrity_check_user_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_integrity_check_user', 
@@ -436,8 +414,7 @@ BEGIN
 			@category_name=N'_dbaid_maintenance',
 			@job_id = @jobId OUTPUT;
 
-		SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseIntegrityCheck] @Databases=''SYSTEM_DATABASES'', @CheckCommands=''CHECKDB'', @LockTimeout=600, @LogToTable=''Y''';
-
+		SET @cmd = N'EXEC [_dbaid].[dbo].[DatabaseIntegrityCheck] @Databases=''SYSTEM_DATABASES'',@CheckCommands=''CHECKDB'',@LockTimeout=600,@LogToTable=''Y''';
 		SET @out = @JobTokenLogDir + N'_dbaid_integrity_check_system_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_integrity_check_system',
@@ -463,17 +440,20 @@ BEGIN
 
 	SET @jobId = NULL;
 
-	IF NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_set_ag_agent_job_state')
+	IF (NOT EXISTS (SELECT [job_id] FROM [msdb].[dbo].[sysjobs_view] WHERE [name] = N'_dbaid_set_ag_agent_job_state') AND @DetectedOS NOT IN (N'AzureManagedInstance'))
 	BEGIN
 	BEGIN TRANSACTION
 		EXEC msdb.dbo.sp_add_job @job_name=N'_dbaid_set_ag_agent_job_state', @owner_login_name=@owner,
 			@enabled=0,
 			@category_name=N'_dbaid_ag_job_maintenance',
-      		@description = N'Called from "_dbaid_set_ag_agent_job_state" alert. The alert and job are DISABLED by default and should remain disabled if manual failover is configured as if this server is restarted, the alert detects a failover event and enables/disables the jobs. However, failover doesn''t actually occur, and the alert doesn''t detect the primary coming back online to enable/disable the jobs. Both the alert and this job need to be enabled for jobs to be updated after failover.',
+      		@description = N'Called from "_dbaid_set_ag_agent_job_state" alert. 
+				The alert and job are DISABLED by default and should remain disabled if manual failover is configured as if this server is restarted, 
+				the alert detects a failover event and enables/disables the jobs. However, failover doesn''t actually occur, 
+				and the alert doesn''t detect the primary coming back online to enable/disable the jobs. 
+				Both the alert and this job need to be enabled for jobs to be updated after failover.',
 			@job_id = @jobId OUTPUT;
 
 		SET @cmd = N'EXEC [_dbaid].[system].[set_ag_agent_job_state] @ag_name = N''<Availability Group Name>'', @wait_seconds = 30;';
-
 		SET @out = @JobTokenLogDir + N'_dbaid_integrity_check_system_' + @JobTokenDateTime + N'.log';
 
 		EXEC msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'_dbaid_set_ag_agent_job_state',
@@ -541,20 +521,22 @@ GO';
 	COMMIT TRANSACTION
 	END
 
-	
 
 	/* Create SQL Agent alert */
 	DECLARE @alertname NVARCHAR(128);
 	SELECT @alertname = [name] FROM msdb.dbo.sysalerts WHERE [message_id] = 1480;
 
-	IF (@alertname IS NOT NULL)
+	IF (@DetectedOS NOT IN (N'AzureManagedInstance'))
 	BEGIN
-		IF (SELECT [job_id] FROM msdb.dbo.sysalerts WHERE [name]=@alertname) = '00000000-0000-0000-0000-000000000000'
-			EXEC msdb.dbo.sp_update_alert @name=@alertname, @job_name=N'_dbaid_set_ag_agent_job_state'
-		ELSE PRINT N'WARNING: Cannot configure Agent alert for "_dbaid_set_ag_agent_job_state", as message_id 1480 is already configured.'
+		IF (@alertname IS NOT NULL)
+		BEGIN
+			IF (SELECT [job_id] FROM msdb.dbo.sysalerts WHERE [name]=@alertname) = '00000000-0000-0000-0000-000000000000'
+				EXEC msdb.dbo.sp_update_alert @name=@alertname, @job_name=N'_dbaid_set_ag_agent_job_state'
+			ELSE PRINT N'WARNING: Cannot configure Agent alert for "_dbaid_set_ag_agent_job_state", as message_id 1480 is already configured.'
+		END
+		ELSE IF NOT EXISTS (SELECT 1 FROM msdb.dbo.sysalerts WHERE [name] = N'_dbaid_set_ag_agent_job_state')
+			EXEC msdb.dbo.sp_add_alert @name = N'_dbaid_set_ag_agent_job_state', @message_id = 1480, @severity = 0, @enabled = 0, @delay_between_responses = 0, @include_event_description_in = 1, @job_name = N'_dbaid_set_ag_agent_job_state';
 	END
-	ELSE IF NOT EXISTS (SELECT 1 FROM msdb.dbo.sysalerts WHERE [name] = N'_dbaid_set_ag_agent_job_state')
-		EXEC msdb.dbo.sp_add_alert @name = N'_dbaid_set_ag_agent_job_state', @message_id = 1480, @severity = 0, @enabled = 0, @delay_between_responses = 0, @include_event_description_in = 1, @job_name = N'_dbaid_set_ag_agent_job_state';
 END
 GO
 
