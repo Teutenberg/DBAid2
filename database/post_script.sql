@@ -58,24 +58,23 @@ USE [msdb]
 GO
 
 DECLARE @DetectedOS NVARCHAR(7), @Slash NCHAR(1);
+SET @Slash = '\'
 
 /* sys.dm_os_host_info is relatively new (SQL 2017+ despite what BOL says; not from 2008). If it's there, query it (result being 'Linux' or 'Windows'). If not there, it's Windows. */
 IF EXISTS (SELECT 1 FROM sys.system_objects WHERE [name] = N'dm_os_host_info' AND [schema_id] = SCHEMA_ID(N'sys'))
-	IF ((SELECT SERVERPROPERTY('EngineEdition')) = 8)
-	BEGIN
-		SET @DetectedOS = 'AzureManagedInstance'
-		SET @Slash = '\'
-	END
-	ELSE IF ((SELECT [host_platform] FROM sys.dm_os_host_info) LIKE N'%Linux%')
+	IF ((SELECT [host_platform] FROM sys.dm_os_host_info) LIKE N'%Linux%')
 	BEGIN
 		/* Linux filesystems use forward slash for navigating folders, not backslash. */
 		SET @DetectedOS = 'Linux'
 		SET @Slash = '/'
 	END
+	ELSE IF ((SELECT SERVERPROPERTY('EngineEdition')) = 8)
+	BEGIN
+		SET @DetectedOS = 'AzureManagedInstance'
+	END
 	ELSE
 	BEGIN
 		SET @DetectedOS = 'Windows'
-		SET @Slash = '\'
 	END
 ELSE 
 	SELECT @DetectedOS = N'Windows';
