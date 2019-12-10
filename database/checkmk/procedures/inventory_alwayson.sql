@@ -28,7 +28,7 @@ BEGIN
 
 		MERGE INTO [checkmk].[config_alwayson] [target]
 		USING CTEAlwaysOn [source]
-		ON [target].[ag_name] = [source].[ag_name] 
+		ON [target].[ag_name] = [source].[ag_name] COLLATE DATABASE_DEFAULT
 		WHEN NOT MATCHED BY TARGET THEN
 			INSERT ([ag_name], [ag_role]) VALUES ([source].[ag_name], [source].[role_desc])
 		WHEN MATCHED THEN
