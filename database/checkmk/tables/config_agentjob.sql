@@ -17,6 +17,7 @@ CREATE TABLE [checkmk].[config_agentjob]
 	[runtime_check_enabled] BIT NOT NULL DEFAULT 1,
 
     [is_continuous_running_job] BIT NOT NULL DEFAULT 0, 
+    [inventory_date] DATETIME NOT NULL DEFAULT GETDATE(), 
     CONSTRAINT [ck_tbl_config_agentjob_state] 
 		CHECK ([state_check_alert] IN ('WARNING','CRITICAL')
 			AND [runtime_check_alert] IN ('WARNING','CRITICAL')

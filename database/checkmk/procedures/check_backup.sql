@@ -64,31 +64,32 @@ BEGIN
 				THEN [C].[backup_check_alert]
 				ELSE 'OK' END AS [state]
 			,QUOTENAME([C].[name]) 
-			+ '; recovery_model=' + [DB].[recovery_model_desc]
+			+ N'; recovery_model=' 
+			+ [DB].[recovery_model_desc] COLLATE DATABASE_DEFAULT
 			+ CASE 
 				WHEN [C].[backup_check_full_hour] IS NOT NULL 
-				THEN '; last_full=' 
+				THEN N'; last_full=' 
 					+ CASE
 					WHEN [LB].[full_backup_date] IS NULL 
-					THEN 'NEVER' 
+					THEN N'NEVER' 
 					ELSE CONVERT(VARCHAR(20), [LB].[full_backup_date], 120) END
 				ELSE '' END
 			+ CASE 
 				WHEN [C].[backup_check_diff_hour] IS NOT NULL 
-				THEN '; last_diff=' 
+				THEN N'; last_diff=' 
 					+ CASE
 					WHEN [LB].[diff_backup_date] IS NULL 
-					THEN 'NEVER' 
+					THEN N'NEVER' 
 					ELSE CONVERT(VARCHAR(20), [LB].[diff_backup_date], 120) END
-				ELSE '' END
+				ELSE N'' END
 			+ CASE 
 				WHEN [C].[backup_check_tran_hour] IS NOT NULL 
-				THEN '; last_tran=' 
+				THEN N'; last_tran=' 
 					+ CASE
 					WHEN [LB].[tran_backup_date] IS NULL 
-					THEN 'NEVER' 
+					THEN N'NEVER' 
 					ELSE CONVERT(VARCHAR(20), [LB].[tran_backup_date], 120) END
-				ELSE '' END
+				ELSE N'' END
 			AS [message]
 		FROM sys.databases [DB]
 			INNER JOIN [checkmk].[config_database] [C]
@@ -97,7 +98,7 @@ BEGIN
 				ON [DB].[name] = [LB].[name] COLLATE DATABASE_DEFAULT
 		WHERE [C].[backup_check_enabled] = 1
 		  AND [DB].[name] <> N'tempdb'
-		  AND [DB].[state_desc] = 'ONLINE'
+		  AND [DB].[state_desc] = N'ONLINE'
 		  AND [DB].[is_in_standby] = 0;
 
 	IF (SELECT COUNT(*) FROM @check_output WHERE [state] != 'OK') = 0
@@ -105,9 +106,9 @@ BEGIN
 		SELECT @backup_enabled = COUNT(*) FROM [checkmk].[config_database] WHERE [backup_check_enabled] = 1 AND [name] <> N'tempdb';
 		SELECT @backup_disabled = COUNT(*) FROM [checkmk].[config_database] WHERE [backup_check_enabled] = 0 AND [name] <> N'tempdb';
 
-		INSERT INTO @check_output VALUES('NA', 'Monitoring databases for backup(s)'
-			+ '; enabled=' + CAST(@backup_enabled AS VARCHAR(8)) 
-			+ '; disabled=' + CAST(@backup_disabled AS VARCHAR(8)));
+		INSERT INTO @check_output VALUES('NA', N'Monitoring databases for backup(s)'
+			+ N'; enabled=' + CAST(@backup_enabled AS NVARCHAR(8)) 
+			+ N'; disabled=' + CAST(@backup_disabled AS NVARCHAR(8)));
 	END
 
 	SELECT [state], [message] FROM @check_output WHERE [state] != 'OK';

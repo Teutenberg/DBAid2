@@ -1,0 +1,875 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="system_get_clean_stringTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.get_clean_string
+DECLARE @dirty_string AS NVARCHAR (MAX);
+
+SELECT @dirty_string = NULL;
+
+SELECT *
+FROM   [system].[get_clean_string](@dirty_string);
+
+</value>
+  </data>
+  <data name="system_get_datetimeoffsetTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.get_datetimeoffset
+DECLARE @datetime AS DATETIME2 (7);
+
+SELECT @datetime = NULL;
+
+SELECT *
+FROM   [system].[get_datetimeoffset](@datetime);
+
+</value>
+  </data>
+  <data name="system_get_instance_guidTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.get_instance_guid
+DECLARE ;
+
+SELECT ;
+
+SELECT *
+FROM   [system].[get_instance_guid]();
+
+</value>
+  </data>
+  <data name="system_get_product_versionTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.get_product_version
+DECLARE ;
+
+SELECT ;
+
+SELECT *
+FROM   [system].[get_product_version]();
+
+</value>
+  </data>
+  <data name="audit_get_database_last_accessTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for audit.get_database_last_access
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [audit].[get_database_last_access] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_chart_capacity_fgTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.chart_capacity_fg
+DECLARE @RC AS INT, @writelog AS BIT;
+
+SELECT @RC = 0,
+       @writelog = 0;
+
+EXECUTE @RC = [checkmk].[chart_capacity_fg] @writelog;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_check_agentjobTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.check_agentjob
+DECLARE @RC AS INT, @writelog AS BIT;
+
+SELECT @RC = 0,
+       @writelog = 0;
+
+EXECUTE @RC = [checkmk].[check_agentjob] @writelog;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_check_alwaysonTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.check_alwayson
+DECLARE @RC AS INT, @writelog AS BIT;
+
+SELECT @RC = 0,
+       @writelog = 0;
+
+EXECUTE @RC = [checkmk].[check_alwayson] @writelog;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_check_backupTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.check_backup
+DECLARE @RC AS INT, @writelog AS BIT;
+
+SELECT @RC = 0,
+       @writelog = 0;
+
+EXECUTE @RC = [checkmk].[check_backup] @writelog;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_check_databaseTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.check_database
+DECLARE @RC AS INT, @writelog AS BIT;
+
+SELECT @RC = 0,
+       @writelog = 0;
+
+EXECUTE @RC = [checkmk].[check_database] @writelog;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_check_integrityTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.check_integrity
+DECLARE @RC AS INT, @writelog AS BIT;
+
+SELECT @RC = 0,
+       @writelog = 0;
+
+EXECUTE @RC = [checkmk].[check_integrity] @writelog;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_check_logshippingTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.check_logshipping
+DECLARE @RC AS INT, @writelog AS BIT;
+
+SELECT @RC = 0,
+       @writelog = 0;
+
+EXECUTE @RC = [checkmk].[check_logshipping] @writelog;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_check_mirroringTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.check_mirroring
+DECLARE @RC AS INT, @writelog AS BIT;
+
+SELECT @RC = 0,
+       @writelog = 0;
+
+EXECUTE @RC = [checkmk].[check_mirroring] @writelog;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_inventory_agentjobTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.inventory_agentjob
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [checkmk].[inventory_agentjob] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_inventory_alwaysonTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.inventory_alwayson
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [checkmk].[inventory_alwayson] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="checkmk_inventory_databaseTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.inventory_database
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [checkmk].[inventory_database] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="collector_get_agentjob_historyTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for collector.get_agentjob_history
+DECLARE @RC AS INT, @start_datetime AS DATETIME, @end_datetime AS DATETIME, @sanitise AS BIT, @update_execution_timestamp AS BIT;
+
+SELECT @RC = 0,
+       @start_datetime = getdate(),
+       @end_datetime = getdate(),
+       @sanitise = 0,
+       @update_execution_timestamp = 0;
+
+EXECUTE @RC = [collector].[get_agentjob_history] @start_datetime, @end_datetime, @sanitise, @update_execution_timestamp;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="collector_get_backup_historyTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for collector.get_backup_history
+DECLARE @RC AS INT, @start_datetime AS DATETIME, @end_datetime AS DATETIME, @update_execution_timestamp AS BIT;
+
+SELECT @RC = 0,
+       @start_datetime = getdate(),
+       @end_datetime = getdate(),
+       @update_execution_timestamp = 0;
+
+EXECUTE @RC = [collector].[get_backup_history] @start_datetime, @end_datetime, @update_execution_timestamp;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="collector_get_capacity_dbTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for collector.get_capacity_db
+DECLARE @RC AS INT, @update_execution_timestamp AS BIT;
+
+SELECT @RC = 0,
+       @update_execution_timestamp = 0;
+
+EXECUTE @RC = [collector].[get_capacity_db] @update_execution_timestamp;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="collector_get_database_ciTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for collector.get_database_ci
+DECLARE @RC AS INT, @update_execution_timestamp AS BIT;
+
+SELECT @RC = 0,
+       @update_execution_timestamp = 0;
+
+EXECUTE @RC = [collector].[get_database_ci] @update_execution_timestamp;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="collector_get_errorlog_historyTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for collector.get_errorlog_history
+DECLARE @RC AS INT, @start_datetime AS DATETIME, @end_datetime AS DATETIME, @sanitise AS BIT, @update_execution_timestamp AS BIT;
+
+SELECT @RC = 0,
+       @start_datetime = getdate(),
+       @end_datetime = getdate(),
+       @sanitise = 0,
+       @update_execution_timestamp = 0;
+
+EXECUTE @RC = [collector].[get_errorlog_history] @start_datetime, @end_datetime, @sanitise, @update_execution_timestamp;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="collector_get_instance_ciTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for collector.get_instance_ci
+DECLARE @RC AS INT, @update_execution_timestamp AS BIT;
+
+SELECT @RC = 0,
+       @update_execution_timestamp = 0;
+
+EXECUTE @RC = [collector].[get_instance_ci] @update_execution_timestamp;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="datamart_process_get_dataTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for datamart.process_get_data
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [datamart].[process_get_data] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="dbo_CommandExecuteTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for dbo.CommandExecute
+DECLARE @RC AS INT, @Command AS NVARCHAR (MAX), @CommandType AS NVARCHAR (MAX), @Mode AS INT, @Comment AS NVARCHAR (MAX), @DatabaseName AS NVARCHAR (MAX), @SchemaName AS NVARCHAR (MAX), @ObjectName AS NVARCHAR (MAX), @ObjectType AS NVARCHAR (MAX), @IndexName AS NVARCHAR (MAX), @IndexType AS INT, @StatisticsName AS NVARCHAR (MAX), @PartitionNumber AS INT, @ExtendedInfo AS XML, @LockMessageSeverity AS INT, @LogToTable AS NVARCHAR (MAX), @Execute AS NVARCHAR (MAX);
+
+SELECT @RC = 0,
+       @Command = NULL,
+       @CommandType = NULL,
+       @Mode = 0,
+       @Comment = NULL,
+       @DatabaseName = NULL,
+       @SchemaName = NULL,
+       @ObjectName = NULL,
+       @ObjectType = NULL,
+       @IndexName = NULL,
+       @IndexType = 0,
+       @StatisticsName = NULL,
+       @PartitionNumber = 0,
+       @ExtendedInfo = NULL,
+       @LockMessageSeverity = 0,
+       @LogToTable = NULL,
+       @Execute = NULL;
+
+EXECUTE @RC = [dbo].[CommandExecute] @Command, @CommandType, @Mode, @Comment, @DatabaseName, @SchemaName, @ObjectName, @ObjectType, @IndexName, @IndexType, @StatisticsName, @PartitionNumber, @ExtendedInfo, @LockMessageSeverity, @LogToTable, @Execute;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="dbo_DatabaseBackupTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for dbo.DatabaseBackup
+DECLARE @RC AS INT, @Databases AS NVARCHAR (MAX), @Directory AS NVARCHAR (MAX), @BackupType AS NVARCHAR (MAX), @Verify AS NVARCHAR (MAX), @CleanupTime AS INT, @CleanupMode AS NVARCHAR (MAX), @Compress AS NVARCHAR (MAX), @CopyOnly AS NVARCHAR (MAX), @ChangeBackupType AS NVARCHAR (MAX), @BackupSoftware AS NVARCHAR (MAX), @CheckSum AS NVARCHAR (MAX), @BlockSize AS INT, @BufferCount AS INT, @MaxTransferSize AS INT, @NumberOfFiles AS INT, @CompressionLevel AS INT, @Description AS NVARCHAR (MAX), @Threads AS INT, @Throttle AS INT, @Encrypt AS NVARCHAR (MAX), @EncryptionAlgorithm AS NVARCHAR (MAX), @ServerCertificate AS NVARCHAR (MAX), @ServerAsymmetricKey AS NVARCHAR (MAX), @EncryptionKey AS NVARCHAR (MAX), @ReadWriteFileGroups AS NVARCHAR (MAX), @OverrideBackupPreference AS NVARCHAR (MAX), @NoRecovery AS NVARCHAR (MAX), @URL AS NVARCHAR (MAX), @Credential AS NVARCHAR (MAX), @MirrorDirectory AS NVARCHAR (MAX), @MirrorCleanupTime AS INT, @MirrorCleanupMode AS NVARCHAR (MAX), @MirrorURL AS NVARCHAR (MAX), @AvailabilityGroups AS NVARCHAR (MAX), @Updateability AS NVARCHAR (MAX), @AdaptiveCompression AS NVARCHAR (MAX), @ModificationLevel AS INT, @LogSizeSinceLastLogBackup AS INT, @TimeSinceLastLogBackup AS INT, @DataDomainBoostHost AS NVARCHAR (MAX), @DataDomainBoostUser AS NVARCHAR (MAX), @DataDomainBoostDevicePath AS NVARCHAR (MAX), @DataDomainBoostLockboxPath AS NVARCHAR (MAX), @DirectoryStructure AS NVARCHAR (MAX), @AvailabilityGroupDirectoryStructure AS NVARCHAR (MAX), @FileName AS NVARCHAR (MAX), @AvailabilityGroupFileName AS NVARCHAR (MAX), @FileExtensionFull AS NVARCHAR (MAX), @FileExtensionDiff AS NVARCHAR (MAX), @FileExtensionLog AS NVARCHAR (MAX), @Init AS NVARCHAR (MAX), @DatabaseOrder AS NVARCHAR (MAX), @DatabasesInParallel AS NVARCHAR (MAX), @LogToTable AS NVARCHAR (MAX), @Execute AS NVARCHAR (MAX);
+
+SELECT @RC = 0,
+       @Databases = NULL,
+       @Directory = NULL,
+       @BackupType = NULL,
+       @Verify = NULL,
+       @CleanupTime = 0,
+       @CleanupMode = NULL,
+       @Compress = NULL,
+       @CopyOnly = NULL,
+       @ChangeBackupType = NULL,
+       @BackupSoftware = NULL,
+       @CheckSum = NULL,
+       @BlockSize = 0,
+       @BufferCount = 0,
+       @MaxTransferSize = 0,
+       @NumberOfFiles = 0,
+       @CompressionLevel = 0,
+       @Description = NULL,
+       @Threads = 0,
+       @Throttle = 0,
+       @Encrypt = NULL,
+       @EncryptionAlgorithm = NULL,
+       @ServerCertificate = NULL,
+       @ServerAsymmetricKey = NULL,
+       @EncryptionKey = NULL,
+       @ReadWriteFileGroups = NULL,
+       @OverrideBackupPreference = NULL,
+       @NoRecovery = NULL,
+       @URL = NULL,
+       @Credential = NULL,
+       @MirrorDirectory = NULL,
+       @MirrorCleanupTime = 0,
+       @MirrorCleanupMode = NULL,
+       @MirrorURL = NULL,
+       @AvailabilityGroups = NULL,
+       @Updateability = NULL,
+       @AdaptiveCompression = NULL,
+       @ModificationLevel = 0,
+       @LogSizeSinceLastLogBackup = 0,
+       @TimeSinceLastLogBackup = 0,
+       @DataDomainBoostHost = NULL,
+       @DataDomainBoostUser = NULL,
+       @DataDomainBoostDevicePath = NULL,
+       @DataDomainBoostLockboxPath = NULL,
+       @DirectoryStructure = NULL,
+       @AvailabilityGroupDirectoryStructure = NULL,
+       @FileName = NULL,
+       @AvailabilityGroupFileName = NULL,
+       @FileExtensionFull = NULL,
+       @FileExtensionDiff = NULL,
+       @FileExtensionLog = NULL,
+       @Init = NULL,
+       @DatabaseOrder = NULL,
+       @DatabasesInParallel = NULL,
+       @LogToTable = NULL,
+       @Execute = NULL;
+
+EXECUTE @RC = [dbo].[DatabaseBackup] @Databases, @Directory, @BackupType, @Verify, @CleanupTime, @CleanupMode, @Compress, @CopyOnly, @ChangeBackupType, @BackupSoftware, @CheckSum, @BlockSize, @BufferCount, @MaxTransferSize, @NumberOfFiles, @CompressionLevel, @Description, @Threads, @Throttle, @Encrypt, @EncryptionAlgorithm, @ServerCertificate, @ServerAsymmetricKey, @EncryptionKey, @ReadWriteFileGroups, @OverrideBackupPreference, @NoRecovery, @URL, @Credential, @MirrorDirectory, @MirrorCleanupTime, @MirrorCleanupMode, @MirrorURL, @AvailabilityGroups, @Updateability, @AdaptiveCompression, @ModificationLevel, @LogSizeSinceLastLogBackup, @TimeSinceLastLogBackup, @DataDomainBoostHost, @DataDomainBoostUser, @DataDomainBoostDevicePath, @DataDomainBoostLockboxPath, @DirectoryStructure, @AvailabilityGroupDirectoryStructure, @FileName, @AvailabilityGroupFileName, @FileExtensionFull, @FileExtensionDiff, @FileExtensionLog, @Init, @DatabaseOrder, @DatabasesInParallel, @LogToTable, @Execute;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="dbo_DatabaseIntegrityCheckTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for dbo.DatabaseIntegrityCheck
+DECLARE @RC AS INT, @Databases AS NVARCHAR (MAX), @CheckCommands AS NVARCHAR (MAX), @PhysicalOnly AS NVARCHAR (MAX), @NoIndex AS NVARCHAR (MAX), @ExtendedLogicalChecks AS NVARCHAR (MAX), @TabLock AS NVARCHAR (MAX), @FileGroups AS NVARCHAR (MAX), @Objects AS NVARCHAR (MAX), @MaxDOP AS INT, @AvailabilityGroups AS NVARCHAR (MAX), @AvailabilityGroupReplicas AS NVARCHAR (MAX), @Updateability AS NVARCHAR (MAX), @TimeLimit AS INT, @LockTimeout AS INT, @LockMessageSeverity AS INT, @DatabaseOrder AS NVARCHAR (MAX), @DatabasesInParallel AS NVARCHAR (MAX), @LogToTable AS NVARCHAR (MAX), @Execute AS NVARCHAR (MAX);
+
+SELECT @RC = 0,
+       @Databases = NULL,
+       @CheckCommands = NULL,
+       @PhysicalOnly = NULL,
+       @NoIndex = NULL,
+       @ExtendedLogicalChecks = NULL,
+       @TabLock = NULL,
+       @FileGroups = NULL,
+       @Objects = NULL,
+       @MaxDOP = 0,
+       @AvailabilityGroups = NULL,
+       @AvailabilityGroupReplicas = NULL,
+       @Updateability = NULL,
+       @TimeLimit = 0,
+       @LockTimeout = 0,
+       @LockMessageSeverity = 0,
+       @DatabaseOrder = NULL,
+       @DatabasesInParallel = NULL,
+       @LogToTable = NULL,
+       @Execute = NULL;
+
+EXECUTE @RC = [dbo].[DatabaseIntegrityCheck] @Databases, @CheckCommands, @PhysicalOnly, @NoIndex, @ExtendedLogicalChecks, @TabLock, @FileGroups, @Objects, @MaxDOP, @AvailabilityGroups, @AvailabilityGroupReplicas, @Updateability, @TimeLimit, @LockTimeout, @LockMessageSeverity, @DatabaseOrder, @DatabasesInParallel, @LogToTable, @Execute;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="dbo_IndexOptimizeTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for dbo.IndexOptimize
+DECLARE @RC AS INT, @Databases AS NVARCHAR (MAX), @FragmentationLow AS NVARCHAR (MAX), @FragmentationMedium AS NVARCHAR (MAX), @FragmentationHigh AS NVARCHAR (MAX), @FragmentationLevel1 AS INT, @FragmentationLevel2 AS INT, @MinNumberOfPages AS INT, @MaxNumberOfPages AS INT, @SortInTempdb AS NVARCHAR (MAX), @MaxDOP AS INT, @FillFactor AS INT, @PadIndex AS NVARCHAR (MAX), @LOBCompaction AS NVARCHAR (MAX), @UpdateStatistics AS NVARCHAR (MAX), @OnlyModifiedStatistics AS NVARCHAR (MAX), @StatisticsModificationLevel AS INT, @StatisticsSample AS INT, @StatisticsResample AS NVARCHAR (MAX), @PartitionLevel AS NVARCHAR (MAX), @MSShippedObjects AS NVARCHAR (MAX), @Indexes AS NVARCHAR (MAX), @TimeLimit AS INT, @Delay AS INT, @WaitAtLowPriorityMaxDuration AS INT, @WaitAtLowPriorityAbortAfterWait AS NVARCHAR (MAX), @Resumable AS NVARCHAR (MAX), @AvailabilityGroups AS NVARCHAR (MAX), @LockTimeout AS INT, @LockMessageSeverity AS INT, @DatabaseOrder AS NVARCHAR (MAX), @DatabasesInParallel AS NVARCHAR (MAX), @LogToTable AS NVARCHAR (MAX), @Execute AS NVARCHAR (MAX);
+
+SELECT @RC = 0,
+       @Databases = NULL,
+       @FragmentationLow = NULL,
+       @FragmentationMedium = NULL,
+       @FragmentationHigh = NULL,
+       @FragmentationLevel1 = 0,
+       @FragmentationLevel2 = 0,
+       @MinNumberOfPages = 0,
+       @MaxNumberOfPages = 0,
+       @SortInTempdb = NULL,
+       @MaxDOP = 0,
+       @FillFactor = 0,
+       @PadIndex = NULL,
+       @LOBCompaction = NULL,
+       @UpdateStatistics = NULL,
+       @OnlyModifiedStatistics = NULL,
+       @StatisticsModificationLevel = 0,
+       @StatisticsSample = 0,
+       @StatisticsResample = NULL,
+       @PartitionLevel = NULL,
+       @MSShippedObjects = NULL,
+       @Indexes = NULL,
+       @TimeLimit = 0,
+       @Delay = 0,
+       @WaitAtLowPriorityMaxDuration = 0,
+       @WaitAtLowPriorityAbortAfterWait = NULL,
+       @Resumable = NULL,
+       @AvailabilityGroups = NULL,
+       @LockTimeout = 0,
+       @LockMessageSeverity = 0,
+       @DatabaseOrder = NULL,
+       @DatabasesInParallel = NULL,
+       @LogToTable = NULL,
+       @Execute = NULL;
+
+EXECUTE @RC = [dbo].[IndexOptimize] @Databases, @FragmentationLow, @FragmentationMedium, @FragmentationHigh, @FragmentationLevel1, @FragmentationLevel2, @MinNumberOfPages, @MaxNumberOfPages, @SortInTempdb, @MaxDOP, @FillFactor, @PadIndex, @LOBCompaction, @UpdateStatistics, @OnlyModifiedStatistics, @StatisticsModificationLevel, @StatisticsSample, @StatisticsResample, @PartitionLevel, @MSShippedObjects, @Indexes, @TimeLimit, @Delay, @WaitAtLowPriorityMaxDuration, @WaitAtLowPriorityAbortAfterWait, @Resumable, @AvailabilityGroups, @LockTimeout, @LockMessageSeverity, @DatabaseOrder, @DatabasesInParallel, @LogToTable, @Execute;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="dbo_sp_WhoIsActiveTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for dbo.sp_WhoIsActive
+DECLARE @RC AS INT, @filter AS [sysname], @filter_type AS VARCHAR (10), @not_filter AS [sysname], @not_filter_type AS VARCHAR (10), @show_own_spid AS BIT, @show_system_spids AS BIT, @show_sleeping_spids AS TINYINT, @get_full_inner_text AS BIT, @get_plans AS TINYINT, @get_outer_command AS BIT, @get_transaction_info AS BIT, @get_task_info AS TINYINT, @get_locks AS BIT, @get_avg_time AS BIT, @get_additional_info AS BIT, @find_block_leaders AS BIT, @delta_interval AS TINYINT, @output_column_list AS VARCHAR (8000), @sort_order AS VARCHAR (500), @format_output AS TINYINT, @destination_table AS VARCHAR (4000), @return_schema AS BIT, @schema AS VARCHAR (MAX), @help AS BIT;
+
+SELECT @RC = 0,
+       @filter = NULL,
+       @filter_type = NULL,
+       @not_filter = NULL,
+       @not_filter_type = NULL,
+       @show_own_spid = 0,
+       @show_system_spids = 0,
+       @show_sleeping_spids = NULL,
+       @get_full_inner_text = 0,
+       @get_plans = NULL,
+       @get_outer_command = 0,
+       @get_transaction_info = 0,
+       @get_task_info = NULL,
+       @get_locks = 0,
+       @get_avg_time = 0,
+       @get_additional_info = 0,
+       @find_block_leaders = 0,
+       @delta_interval = NULL,
+       @output_column_list = NULL,
+       @sort_order = NULL,
+       @format_output = NULL,
+       @destination_table = NULL,
+       @return_schema = 0,
+       @help = 0;
+
+EXECUTE @RC = [dbo].[sp_WhoIsActive] @filter, @filter_type, @not_filter, @not_filter_type, @show_own_spid, @show_system_spids, @show_sleeping_spids, @get_full_inner_text, @get_plans, @get_outer_command, @get_transaction_info, @get_task_info, @get_locks, @get_avg_time, @get_additional_info, @find_block_leaders, @delta_interval, @output_column_list, @sort_order, @format_output, @destination_table, @return_schema, @schema OUTPUT, @help;
+
+SELECT @RC AS RC,
+       @schema AS schema;
+
+</value>
+  </data>
+  <data name="health_get_block_process_historyTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for health.get_block_process_history
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [health].[get_block_process_history] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="health_get_dead_lock_historyTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for health.get_dead_lock_history
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [health].[get_dead_lock_history] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="health_get_file_io_performanceTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for health.get_file_io_performance
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [health].[get_file_io_performance] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="health_get_index_fragmentationTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for health.get_index_fragmentation
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [health].[get_index_fragmentation] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="health_get_statistic_stateTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for health.get_statistic_state
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [health].[get_statistic_state] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="health_get_transaction_logTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for health.get_transaction_log
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [health].[get_transaction_log] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_delete_system_historyTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.delete_system_history
+DECLARE @RC AS INT, @job_olderthan_day AS INT, @backup_olderthan_day AS INT, @dbmail_olderthan_day AS INT, @maintplan_olderthan_day AS INT, @ola_cmdlog_olderthan_day AS INT;
+
+SELECT @RC = 0,
+       @job_olderthan_day = 0,
+       @backup_olderthan_day = 0,
+       @dbmail_olderthan_day = 0,
+       @maintplan_olderthan_day = 0,
+       @ola_cmdlog_olderthan_day = 0;
+
+EXECUTE @RC = [system].[delete_system_history] @job_olderthan_day, @backup_olderthan_day, @dbmail_olderthan_day, @maintplan_olderthan_day, @ola_cmdlog_olderthan_day;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_execute_foreach_dbTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.execute_foreach_db
+DECLARE @RC AS INT, @cmd AS NVARCHAR (MAX);
+
+SELECT @RC = 0,
+       @cmd = NULL;
+
+EXECUTE @RC = [system].[execute_foreach_db] @cmd;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_generate_database_permission_scriptTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.generate_database_permission_script
+DECLARE @RC AS INT, @database_name AS [sysname], @principal_name AS [sysname], @principal_type AS NVARCHAR (60), @script_type AS VARCHAR (20);
+
+SELECT @RC = 0,
+       @database_name = NULL,
+       @principal_name = NULL,
+       @principal_type = NULL,
+       @script_type = NULL;
+
+EXECUTE @RC = [system].[generate_database_permission_script] @database_name, @principal_name, @principal_type, @script_type;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_generate_login_scriptTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.generate_login_script
+DECLARE @RC AS INT, @login_name AS [sysname], @exclude_local AS BIT, @exclude_system AS BIT;
+
+SELECT @RC = 0,
+       @login_name = NULL,
+       @exclude_local = 0,
+       @exclude_system = 0;
+
+EXECUTE @RC = [system].[generate_login_script] @login_name, @exclude_local, @exclude_system;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_generate_secretTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.generate_secret
+DECLARE @RC AS INT, @length AS INT, @secret AS VARCHAR (100);
+
+SELECT @RC = 0,
+       @length = 0;
+
+EXECUTE @RC = [system].[generate_secret] @length, @secret OUTPUT;
+
+SELECT @RC AS RC,
+       @secret AS secret;
+
+</value>
+  </data>
+  <data name="system_get_instance_tagTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.get_instance_tag
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [system].[get_instance_tag] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_set_ag_agent_job_stateTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.set_ag_agent_job_state
+DECLARE @RC AS INT, @ag_name AS [sysname], @wait_seconds AS INT;
+
+SELECT @RC = 0,
+       @ag_name = NULL,
+       @wait_seconds = 0;
+
+EXECUTE @RC = [system].[set_ag_agent_job_state] @ag_name, @wait_seconds;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_set_default_agentjob_configurationTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.set_default_agentjob_configuration
+DECLARE @RC AS INT;
+
+SELECT @RC = 0;
+
+EXECUTE @RC = [system].[set_default_agentjob_configuration] ;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_set_default_db_performance_configurationTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.set_default_db_performance_configuration
+DECLARE @RC AS INT, @db_name AS [sysname];
+
+SELECT @RC = 0,
+       @db_name = NULL;
+
+EXECUTE @RC = [system].[set_default_db_performance_configuration] @db_name;
+
+SELECT @RC AS RC;
+
+</value>
+  </data>
+  <data name="system_get_hexadecimalTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.get_hexadecimal
+DECLARE @binvalue AS VARBINARY (256);
+
+SELECT @binvalue = NULL;
+
+SELECT *
+FROM   [system].[get_hexadecimal](@binvalue);
+
+</value>
+  </data>
+  <data name="system_get_split_stringTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for system.get_split_string
+DECLARE @str AS VARCHAR (MAX), @delimiter AS VARCHAR (10);
+
+SELECT @str = NULL,
+       @delimiter = NULL;
+
+SELECT *
+FROM   [system].[get_split_string](@str, @delimiter);
+
+</value>
+  </data>
+  <data name="checkmk_ag_role_change_datetimeTest_TestAction.SqlScript" xml:space="preserve">
+    <value>-- database unit test for checkmk.ag_role_change_datetime
+DECLARE @ag_id AS UNIQUEIDENTIFIER, @ag_name AS NVARCHAR (256), @ag_state_alert AS NVARCHAR (8), @ag_state_is_enabled AS BIT, @ag_role AS NVARCHAR (256), @ag_role_alert AS NVARCHAR (8), @ag_role_is_enabled AS BIT, @ag_role_change_datetime AS DATETIME
+SELECT @ag_id = NULL,
+       @ag_name = NULL,
+       @ag_state_alert = NULL,
+       @ag_state_is_enabled = 0,
+       @ag_role = NULL,
+       @ag_role_alert = NULL,
+       @ag_role_is_enabled = 0,
+       @ag_role_change_datetime = getdate()
+UPDATE [checkmk].[config_alwayson]
+SET    [ag_id]                   = @ag_id,
+       [ag_name]                 = @ag_name,
+       [ag_state_alert]          = @ag_state_alert,
+       [ag_state_is_enabled]     = @ag_state_is_enabled,
+       [ag_role]                 = @ag_role,
+       [ag_role_alert]           = @ag_role_alert,
+       [ag_role_is_enabled]      = @ag_role_is_enabled,
+       [ag_role_change_datetime] = @ag_role_change_datetime
+WHERE  N'[ag_id]' = N'@ag_id'
+       AND N'[ag_name]' = N'@ag_name'
+           AND N'[ag_state_alert]' = N'@ag_state_alert'
+               AND N'[ag_state_is_enabled]' = N'@ag_state_is_enabled'
+                   AND N'[ag_role]' = N'@ag_role'
+                       AND N'[ag_role_alert]' = N'@ag_role_alert'
+                           AND N'[ag_role_is_enabled]' = N'@ag_role_is_enabled'
+                               AND N'[ag_role_change_datetime]' = N'@ag_role_change_datetime'
+</value>
+  </data>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+</root>

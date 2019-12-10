@@ -16,6 +16,8 @@ BEGIN
 	ON [Target].[name] = [Source].[name] COLLATE DATABASE_DEFAULT
 	WHEN NOT MATCHED BY TARGET THEN
 		INSERT ([name])	VALUES ([Source].[name])
+	WHEN MATCHED THEN
+		UPDATE SET [target].[inventory_date] = GETDATE()
 	WHEN NOT MATCHED BY SOURCE THEN
 		DELETE;
 END

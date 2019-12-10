@@ -17,17 +17,8 @@ BEGIN
 	WHEN NOT MATCHED BY TARGET THEN
 		INSERT ([name]) VALUES ([source].[name])
 	WHEN MATCHED THEN
-		UPDATE SET [target].[backup_check_tran_hour] = CASE WHEN [source].[recovery_model_desc] = 'SIMPLE' THEN NULL ELSE 1 END
-			,[target].[inventory_date] = GETDATE()
+		UPDATE SET [target].[inventory_date] = GETDATE()
 	WHEN NOT MATCHED BY SOURCE AND [target].[inventory_date] < DATEADD(DAY, -7, GETDATE()) THEN
 		DELETE;
-
-	/* Change defaults for tempdb - e.g. we don't want backup or integrity check alerts as it gets neither done on it */
-	UPDATE [checkmk].[config_database]
-	SET backup_check_enabled = 0, 
-		integrity_check_enabled = 0, 
-		logshipping_check_enabled = 0, 
-		mirroring_check_enabled = 0
-	WHERE [name] = N'tempdb';
 END
 

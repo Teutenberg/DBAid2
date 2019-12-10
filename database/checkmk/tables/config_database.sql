@@ -14,8 +14,8 @@ CREATE TABLE [checkmk].[config_database]
 	[backup_check_alert] VARCHAR(10) NOT NULL DEFAULT 'CRITICAL',
 	[backup_check_enabled] BIT NOT NULL DEFAULT 1,
 	[backup_check_full_hour] INT NULL DEFAULT 30,
-	[backup_check_diff_hour] INT NULL DEFAULT NULL,
-	[backup_check_tran_hour] INT NULL DEFAULT 0,
+	[backup_check_diff_hour] INT NULL DEFAULT 30,
+	[backup_check_tran_hour] INT NULL DEFAULT 1,
 	
 	[integrity_check_alert] VARCHAR(10) NOT NULL DEFAULT 'WARNING',
 	[integrity_check_hour] INT NOT NULL DEFAULT 170, 
@@ -33,7 +33,7 @@ CREATE TABLE [checkmk].[config_database]
 	[capacity_check_critical_free] NUMERIC(5,2) NOT NULL DEFAULT 10.00, 
 	[capacity_check_enabled] BIT NOT NULL DEFAULT 1,
 
-	[inventory_date] DATETIME DEFAULT GETDATE(),
+	[inventory_date] DATETIME DEFAULT GETDATE() NOT NULL,
 
     CONSTRAINT [ck_config_database] 
 		CHECK ([database_check_alert] IN ('WARNING','CRITICAL') 

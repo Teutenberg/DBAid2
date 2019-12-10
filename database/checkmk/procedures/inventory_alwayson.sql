@@ -15,8 +15,7 @@ BEGIN
 
 		;WITH CTEAlwaysOn AS
 		(
-			SELECT [AG].[ag_id]
-				,[AG].[ag_name] 
+			SELECT [AG].[ag_name] 
 				,[RS].[role_desc]
 			FROM [sys].[dm_hadr_name_id_map] [AG]
 				INNER JOIN [sys].[dm_hadr_availability_replica_cluster_states] [RCS] 
@@ -29,11 +28,11 @@ BEGIN
 
 		MERGE INTO [checkmk].[config_alwayson] [target]
 		USING CTEAlwaysOn [source]
-		ON [target].[ag_id] = [source].[ag_id] 
+		ON [target].[ag_name] = [source].[ag_name] 
 		WHEN NOT MATCHED BY TARGET THEN
-			INSERT ([ag_id], [ag_name], [ag_role]) VALUES ([source].[ag_id], [source].[ag_name], [source].[role_desc])
+			INSERT ([ag_name], [ag_role]) VALUES ([source].[ag_name], [source].[role_desc])
 		WHEN MATCHED THEN
-			UPDATE SET [target].[ag_name] = [source].[ag_name]
+			UPDATE SET [target].[inventory_date] = GETDATE()
 		WHEN NOT MATCHED BY SOURCE THEN
 			DELETE;
 	END
