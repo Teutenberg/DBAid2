@@ -225,7 +225,6 @@
     </ArtifactReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="database.publish.xml" />
     <None Include="get-latest-submodules.ps1" />
     <None Include="datamart\load-collector-xml-into-datamart.ps1" />
   </ItemGroup>
